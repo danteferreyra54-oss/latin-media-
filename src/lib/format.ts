@@ -70,21 +70,25 @@ export function formatTiempoRelativo(iso: string, ahora: Date = new Date()): str
   return `Hace ${diffDias} día${diffDias === 1 ? "" : "s"}`;
 }
 
-/** Genera una hora variada basada en el slug para consistencia. ±20 minutos aleatoriamente. */
-export function formatHoraVariada(iso: string, slugOrIndex: string | number): string {
-  const fecha = new Date(iso);
-
+function hashSlug(slug: string): number {
   let hash = 0;
-  if (typeof slugOrIndex === "number") {
-    hash = slugOrIndex * 73;
-  } else {
-    for (let i = 0; i < slugOrIndex.length; i++) {
-      hash = ((hash << 5) - hash) + slugOrIndex.charCodeAt(i);
-      hash = hash & hash;
-    }
+  for (let i = 0; i < slug.length; i++) {
+    hash = (hash << 5) - hash + slug.charCodeAt(i);
+    hash = hash & hash;
   }
+  return hash;
+}
+
+/** Pseudo-random determinístico [0, 1) a partir de un hash entero. */
+function seededFraction(hash: number): number {
   const x = Math.sin(hash) * 10000;
-  const seeded = x - Math.floor(x);
+  return x - Math.floor(x);
+}
+
+/** Genera una hora variada basada en el slug para consistencia. ±20 minutos aleatoriamente. */
+export function formatHoraVariada(iso: string, slug: string): string {
+  const fecha = new Date(iso);
+  const seeded = seededFraction(hashSlug(slug));
   const variacion = Math.floor(seeded * 41) - 20;
 
   const partes = HORA.format(fecha).split(":");
@@ -98,8 +102,44 @@ export function formatHoraVariada(iso: string, slugOrIndex: string | number): st
     minutos -= 60;
     horas += 1;
   }
+  horas = ((horas % 24) + 24) % 24;
 
   const horaStr = horas.toString().padStart(2, "0");
   const minStr = minutos.toString().padStart(2, "0");
   return `${horaStr}:${minStr}`;
+}
+
+/**
+ * Genera horas para una lista de notas YA ordenadas por fecha descendente,
+ * de forma que el resultado también quede estrictamente descendente:
+ * ancla en la hora real de la primera nota y va restando entre 1 y 20
+ * minutos (determinístico por slug) para cada nota siguiente.
+ */
+export function formatHorariosEscalonados(
+  notas: { slug: string; fecha: string }[]
+): string[] {
+  if (notas.length === 0) return [];
+
+  const partesIniciales = HORA.format(new Date(notas[0].fecha)).split(":");
+  let minutosTotales =
+    parseInt(partesIniciales[0], 10) * 60 + parseInt(partesIniciales[1], 10);
+
+  const resultado: string[] = [];
+
+  for (let i = 0; i < notas.length; i++) {
+    if (i > 0) {
+      const seeded = seededFraction(hashSlug(notas[i].slug));
+      const gap = 1 + Math.floor(seeded * 20); // 1 a 20 minutos
+      minutosTotales -= gap;
+    }
+
+    let h = Math.floor(minutosTotales / 60) % 24;
+    let m = minutosTotales % 60;
+    if (h < 0) h += 24;
+    if (m < 0) m += 60;
+
+    resultado.push(`${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`);
+  }
+
+  return resultado;
 }

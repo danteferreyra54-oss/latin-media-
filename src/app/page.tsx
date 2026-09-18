@@ -9,7 +9,7 @@ import SiteFooter from "@/components/SiteFooter";
 import { getArticuloPrincipal, getNotasPorSeccion, getNotasRecientes } from "@/lib/articles";
 import { getVideosDestacados } from "@/lib/videos";
 import { getResumenDelDia } from "@/lib/resumen";
-import { formatHora } from "@/lib/format";
+import { formatHorariosEscalonados } from "@/lib/format";
 import { SECCION_HREF } from "@/lib/nav";
 
 const NOTAS_POR_SECCION = 6;
@@ -41,11 +41,13 @@ export default async function Home() {
   // dos bloques sin overlap: 5 para la grilla mixta, y el resto para el
   // sidebar de "Últimas noticias".
   const grillaMixta = recientes.slice(0, 5);
-  const ultimasNoticias = recientes.slice(5, 15).map((nota) => ({
+  const notasSidebar = recientes.slice(5, 15);
+  const horasSidebar = formatHorariosEscalonados(notasSidebar);
+  const ultimasNoticias = notasSidebar.map((nota, idx) => ({
     slug: nota.slug,
     titulo: nota.titulo,
     seccion: nota.seccion,
-    hora: formatHora(nota.fecha),
+    hora: horasSidebar[idx],
     imagen: nota.imagen,
   }));
 

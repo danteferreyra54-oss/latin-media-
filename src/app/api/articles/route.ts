@@ -28,6 +28,7 @@ interface ArticuloBody {
   faqs?: unknown;
   video_url?: unknown;
   slug?: unknown;
+  provincia?: unknown;
 }
 
 function esFaqValida(item: unknown): item is Faq {
@@ -73,6 +74,13 @@ function validar(body: ArticuloBody): string | null {
   }
   if (body.slug !== undefined && typeof body.slug !== "string") {
     return "slug debe ser un string";
+  }
+  if (
+    body.provincia !== undefined &&
+    body.provincia !== null &&
+    typeof body.provincia !== "string"
+  ) {
+    return "provincia debe ser un string o null";
   }
   return null;
 }
@@ -156,6 +164,7 @@ export async function POST(request: NextRequest) {
       imagen: (body.imagen as ImagenVariante | undefined) ?? "",
       faqs: (body.faqs as Faq[] | undefined) ?? null,
       video_url: ((body.video_url as string | undefined) ?? "").trim() || null,
+      provincia: (body.provincia as string | null | undefined) ?? null,
     })
     .select()
     .single();

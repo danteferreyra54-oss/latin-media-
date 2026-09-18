@@ -1,7 +1,7 @@
 import Link from "next/link";
 import PhotoPlaceholder from "./PhotoPlaceholder";
 import type { ArticuloHome } from "@/types/article";
-import { formatHoraVariada } from "@/lib/format";
+import { formatHorariosEscalonados } from "@/lib/format";
 
 interface Props {
   titulo: string;
@@ -9,6 +9,8 @@ interface Props {
 }
 
 export default function SeccionListado({ titulo, notas }: Props) {
+  const horas = formatHorariosEscalonados(notas);
+
   return (
     <section className="sections seccion-page">
       <div className="wrap">
@@ -24,7 +26,7 @@ export default function SeccionListado({ titulo, notas }: Props) {
                 <PhotoPlaceholder variante={nota.imagen} className="cimg" />
                 <div className="card-header">
                   <div className="kicker">{nota.kicker}</div>
-                  <div className="hora">{formatHoraVariada(nota.fecha, idx)}</div>
+                  <div className="hora">{horas[idx]}</div>
                 </div>
                 <h3>{nota.titulo}</h3>
                 <p>{nota.bajada}</p>

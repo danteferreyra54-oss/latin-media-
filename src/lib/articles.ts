@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import type { ArticuloHome, ItemUltimasNoticias, Seccion } from "@/types/article";
-import { formatHora, formatHoraVariada } from "@/lib/format";
+import { formatHora, formatHorariosEscalonados } from "@/lib/format";
 
 const CAMPOS_ARTICULO =
   "slug,titulo,bajada,cuerpo,seccion,kicker,autor,fecha,fuente,imagen,faqs,video_url";
@@ -53,11 +53,14 @@ export async function getUltimasNoticias(limite = 8): Promise<ItemUltimasNoticia
 
   if (error) console.error("getUltimasNoticias:", error.message);
 
-  return (data ?? []).map((articulo) => ({
+  const articulos = data ?? [];
+  const horas = formatHorariosEscalonados(articulos);
+
+  return articulos.map((articulo, idx) => ({
     slug: articulo.slug,
     titulo: articulo.titulo,
     seccion: articulo.seccion,
-    hora: formatHoraVariada(articulo.fecha, articulo.slug),
+    hora: horas[idx],
     imagen: articulo.imagen,
   }));
 }

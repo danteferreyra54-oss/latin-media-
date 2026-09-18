@@ -1,7 +1,6 @@
 import Link from "next/link";
 import PhotoPlaceholder from "./PhotoPlaceholder";
 import type { ArticuloHome } from "@/types/article";
-import { formatHoraVariada } from "@/lib/format";
 
 interface Props {
   notas: ArticuloHome[];
