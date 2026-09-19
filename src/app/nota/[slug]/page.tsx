@@ -57,6 +57,7 @@ export default async function NotaPage({ params }: Props) {
   const relacionadas = await getNotasRelacionadas(articulo.seccion, articulo.slug);
   const cuerpoMarkdown = normalizarMarkdown(articulo.cuerpo);
   const youtubeId = articulo.video_url ? extraerYoutubeId(articulo.video_url) : null;
+  const videoUrl = articulo.video_url && !youtubeId ? articulo.video_url : null;
   const faqs = articulo.faqs ?? [];
 
   return (
@@ -90,6 +91,17 @@ export default async function NotaPage({ params }: Props) {
               <div className="nota-video">
                 <iframe
                   src={`https://www.youtube.com/embed/${youtubeId}`}
+                  title={articulo.titulo}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            )}
+
+            {videoUrl && !youtubeId && (
+              <div className="nota-video">
+                <iframe
+                  src={videoUrl}
                   title={articulo.titulo}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
