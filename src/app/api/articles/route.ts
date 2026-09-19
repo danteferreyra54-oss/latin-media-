@@ -23,12 +23,14 @@ interface ArticuloBody {
   autor?: unknown;
   fecha?: unknown;
   fuente?: unknown;
+  fuente_original?: unknown;
   kicker?: unknown;
   imagen?: unknown;
   faqs?: unknown;
   video_url?: unknown;
   slug?: unknown;
   provincia?: unknown;
+  topic_key?: unknown;
 }
 
 function esFaqValida(item: unknown): item is Faq {
@@ -81,6 +83,13 @@ function validar(body: ArticuloBody): string | null {
     typeof body.provincia !== "string"
   ) {
     return "provincia debe ser un string o null";
+  }
+  if (
+    body.fuente_original !== undefined &&
+    body.fuente_original !== null &&
+    typeof body.fuente_original !== "string"
+  ) {
+    return "fuente_original debe ser un string o null";
   }
   return null;
 }
@@ -155,12 +164,14 @@ export async function POST(request: NextRequest) {
       slug: slugBase,
       titulo,
       bajada: (body.bajada as string).trim(),
+      topic_key: (body.topic_key as string | null | undefined) ?? null,
       cuerpo: body.cuerpo as string,
       seccion,
       kicker: (body.kicker as string | undefined)?.trim() || seccion,
       autor: (body.autor as string).trim(),
       fecha: body.fecha as string,
       fuente,
+      fuente_original: (body.fuente_original as string | null | undefined) ?? null,
       imagen: (body.imagen as ImagenVariante | undefined) ?? "",
       faqs: (body.faqs as Faq[] | undefined) ?? null,
       video_url: ((body.video_url as string | undefined) ?? "").trim() || null,
