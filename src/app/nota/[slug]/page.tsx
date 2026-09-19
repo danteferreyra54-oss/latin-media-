@@ -57,7 +57,6 @@ export default async function NotaPage({ params }: Props) {
   const relacionadas = await getNotasRelacionadas(articulo.seccion, articulo.slug);
   const cuerpoMarkdown = normalizarMarkdown(articulo.cuerpo);
   const youtubeId = articulo.video_url ? extraerYoutubeId(articulo.video_url) : null;
-  const videoUrl = articulo.video_url && !youtubeId ? articulo.video_url : null;
   const faqs = articulo.faqs ?? [];
 
   return (
@@ -98,29 +97,6 @@ export default async function NotaPage({ params }: Props) {
               </div>
             )}
 
-            {videoUrl && !youtubeId && (
-              <div className="nota-video">
-                <a
-                  href={videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'block',
-                    padding: '40px',
-                    backgroundColor: '#f0f0f0',
-                    borderRadius: '8px',
-                    textAlign: 'center',
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    color: '#0066cc',
-                    textDecoration: 'none',
-                    border: '2px solid #0066cc'
-                  }}
-                >
-                  ▶ Ver video en la fuente original
-                </a>
-              </div>
-            )}
 
             <div className="nota-cuerpo">
               {cuerpoMarkdown ? (
