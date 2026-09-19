@@ -10,22 +10,6 @@ export default async function SiteHeader() {
 
   return (
     <>
-      <div className="utility">
-        <div className="wrap">
-          {/* Banner "Estás en <provincia> · Elegí tu provincia" deshabilitado por ahora.
-          <div className="net">
-            <span className="dot" />
-            <ProvinciaSelector />
-          </div>
-          */}
-          <div />
-          <div className="links">
-            <a href="https://www.instagram.com/latinmediaagency/" target="_blank" rel="noopener noreferrer">
-              Instagram
-            </a>
-          </div>
-        </div>
-      </div>
 
       {(blue || oficial) && (
         <div className="dolar-bar">
@@ -59,7 +43,11 @@ export default async function SiteHeader() {
               <div className="logo-subtitulo">Actualidad política</div>
             </div>
           </Link>
-          <div className="mh-right" />
+          <div className="mh-right">
+            <a href="https://www.instagram.com/latinmediaagency/" target="_blank" rel="noopener noreferrer" className="social-link">
+              Instagram
+            </a>
+          </div>
         </div>
       </header>
 

@@ -101,6 +101,8 @@ code{word-break:break-word;overflow-wrap:break-word}
 .logo-type{font-family:var(--logo);font-weight:700;font-size:56px;letter-spacing:-.015em;line-height:1}
 .logo-subtitulo{font-family:var(--montserrat);font-size:13px;font-weight:300;letter-spacing:.04em;color:var(--ink-70);margin-top:3px;margin-left:4px}
 .mh-right{justify-self:end;display:flex;gap:10px;align-items:center}
+.social-link{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;color:var(--ink-40);text-decoration:none;transition:.18s}
+.social-link:hover{color:var(--red)}
 .btn-ghost{font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;border:1px solid var(--ink);padding:10px 17px;transition:.18s;background:none;cursor:pointer}
 .btn-ghost:hover{background:var(--ink);color:var(--paper)}
 .btn-red{font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;background:var(--ink);color:#fff;padding:11px 18px;transition:.18s;border:none;cursor:pointer}
