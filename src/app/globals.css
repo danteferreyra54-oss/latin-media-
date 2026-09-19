@@ -78,6 +78,15 @@ code{word-break:break-word;overflow-wrap:break-word}
 .prov-dropdown button.activa{color:var(--red);font-weight:700}
 .utility .links a:hover{color:var(--red-bright)}
 
+/* ---------- DOLAR BAR ---------- */
+.dolar-bar{background:var(--paper-2);border-bottom:1px solid var(--rule)}
+.dolar-bar .wrap{
+  display:flex;justify-content:center;align-items:center;gap:10px;
+  height:32px;font-size:12px;color:var(--ink-70);
+}
+.dolar-bar .sep{color:var(--ink-40)}
+.dolar-bar strong{color:var(--ink);font-weight:700}
+
 /* ---------- MASTHEAD ---------- */
 .masthead{border-bottom:1px solid var(--rule)}
 .masthead .wrap{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:28px 34px 24px;gap:20px}
