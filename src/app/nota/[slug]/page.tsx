@@ -100,11 +100,13 @@ export default async function NotaPage({ params }: Props) {
 
             {videoUrl && !youtubeId && (
               <div className="nota-video">
-                <iframe
+                <video
                   src={videoUrl}
                   title={articulo.titulo}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
+                  controls
+                  controlsList="nodownload"
+                  width="100%"
+                  height="auto"
                 />
               </div>
             )}
