@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { formatFechaLarga } from "@/lib/format";
+import { getCotizacionDolarBlue } from "@/lib/dolar";
 // import ProvinciaSelector from "./ProvinciaSelector"; // deshabilitado por ahora
 import StickyNav from "./StickyNav";
 
-export default function SiteHeader() {
+export default async function SiteHeader() {
   const fecha = formatFechaLarga(new Date());
+  const dolar = await getCotizacionDolarBlue();
 
   return (
     <>
@@ -31,6 +33,7 @@ export default function SiteHeader() {
             {fecha}
             <br />
             Buenos Aires, 11°
+            {dolar && ` · Dólar blue $${dolar.venta}`}
           </div>
           <Link href="/" className="logo">
             <div className="logo-mark">LM</div>
