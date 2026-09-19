@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bodoni_Moda, Frank_Ruhl_Libre, Libre_Franklin, Montserrat } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from '@vercel/analytics/next'
 
 const bodoniModa = Bodoni_Moda({
@@ -46,13 +47,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="es-AR"
       className={`${bodoniModa.variable} ${frankRuhlLibre.variable} ${libreFranklin.variable} ${montserrat.variable}`}
     >
-      <body>
-        {children}
-        <Script
-          src="https://platform.twitter.com/widgets.js"
-          strategy="lazyOnload"
-        />
-      </body>
+  <body>
+  {children}
+  <Script
+    src="https://platform.twitter.com/widgets.js"
+    strategy="lazyOnload"
+  />
+  <SpeedInsights />
+  <Analytics />
+</body>
     </html>
   );
 }
