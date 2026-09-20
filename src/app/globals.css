@@ -356,6 +356,11 @@ code{word-break:break-word;overflow-wrap:break-word}
 
 .nota-fuente{font-family:var(--sans);font-size:12.5px;color:var(--ink-40);margin-top:36px;word-break:break-word;overflow-wrap:break-word}
 
+.tweet-card{display:flex;align-items:center;gap:12px;border:1px solid var(--rule);padding:14px 18px;margin:24px 0;max-width:480px;transition:.18s;background:var(--paper)}
+.tweet-card:hover{border-color:var(--ink);background:var(--paper-2)}
+.tweet-card-icon{font-size:20px;font-weight:700;color:var(--ink);flex-shrink:0}
+.tweet-card-texto{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink);letter-spacing:.02em}
+
 .nota-faqs{margin-top:32px;padding-top:28px;border-top:1px solid var(--rule)}
 .nota-faqs-titulo{
   font-family:var(--sans);font-weight:800;font-size:15px;letter-spacing:.08em;
