@@ -11,7 +11,9 @@ import TwitterEmbed from "@/components/TwitterEmbed";
 import { getArticuloPorSlug, getNotasRelacionadas } from "@/lib/articles";
 import { formatFechaLarga, formatNombreFuente, normalizarMarkdown } from "@/lib/format";
 import { SECCION_HREF } from "@/lib/nav";
-import { extraerYoutubeId } from "@/lib/youtube";
+import { extraerYoutubeId, extraerDailymotionId } from "@/lib/youtube";
+
+export const revalidate = 60;
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -63,6 +65,7 @@ export default async function NotaPage({ params }: Props) {
   }
 
   const youtubeId = articulo.video_url ? extraerYoutubeId(articulo.video_url) : null;
+  const dailymotionId = !youtubeId && articulo.video_url ? extraerDailymotionId(articulo.video_url) : null;
   const faqs = articulo.faqs ?? [];
 
   return (
@@ -98,6 +101,17 @@ export default async function NotaPage({ params }: Props) {
                   src={`https://www.youtube.com/embed/${youtubeId}`}
                   title={articulo.titulo}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            )}
+
+            {dailymotionId && (
+              <div className="nota-video">
+                <iframe
+                  src={`https://www.dailymotion.com/embed/video/${dailymotionId}`}
+                  title={articulo.titulo}
+                  allow="autoplay; fullscreen"
                   allowFullScreen
                 />
               </div>
