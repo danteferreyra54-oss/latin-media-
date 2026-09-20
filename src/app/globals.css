@@ -110,6 +110,7 @@ code{word-break:break-word;overflow-wrap:break-word}
 
 /* ---------- NAV ---------- */
 .nav{border-bottom:4px solid var(--red);background:var(--paper);position:sticky;top:0;z-index:50;transition:transform .25s ease}
+.nav-spacer{display:none}
 .nav .wrap{display:flex;justify-content:center;gap:36px}
 .nav a{
   font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
@@ -428,7 +429,9 @@ footer{background:var(--ink);color:#B2A89F;padding:52px 0 28px;font-size:13px}
 @media(max-width:640px){
   .wrap{padding:0 18px}
 
+  .nav{position:fixed;width:100%;left:0}
   .nav.nav--oculto{transform:translateY(-100%)}
+  .nav-spacer{display:block;height:40px}
 
   .utility .links{display:none}
   .utility .wrap{height:auto;padding:9px 0}

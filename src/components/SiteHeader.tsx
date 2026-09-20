@@ -48,6 +48,7 @@ export default async function SiteHeader() {
       </header>
 
       <StickyNav />
+      <div className="nav-spacer" aria-hidden="true" />
     </>
   );
 }
