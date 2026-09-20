@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { formatFechaLarga } from "@/lib/format";
 import { getCotizacionesDolar } from "@/lib/dolar";
+import { getClimaPorUbicacion } from "@/lib/clima";
 // import ProvinciaSelector from "./ProvinciaSelector"; // deshabilitado por ahora
 import StickyNav from "./StickyNav";
 
 export default async function SiteHeader() {
   const fecha = formatFechaLarga(new Date());
-  const { blue, oficial } = await getCotizacionesDolar();
+  const [{ blue, oficial }, { ciudad, temperatura }] = await Promise.all([
+    getCotizacionesDolar(),
+    getClimaPorUbicacion(),
+  ]);
 
   return (
     <>
@@ -34,7 +38,7 @@ export default async function SiteHeader() {
           <div className="mh-left">
             {fecha}
             <br />
-            Buenos Aires, 11°
+            {ciudad}, {temperatura}°
           </div>
           <Link href="/" className="logo">
             <div className="logo-mark">LM</div>
@@ -48,7 +52,6 @@ export default async function SiteHeader() {
       </header>
 
       <StickyNav />
-      <div className="nav-spacer" aria-hidden="true" />
     </>
   );
 }

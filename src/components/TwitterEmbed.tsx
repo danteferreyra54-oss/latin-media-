@@ -16,11 +16,19 @@ interface Props {
 export default function TwitterEmbed({ url }: Props) {
   useEffect(() => {
     function procesar() {
-      window.twttr?.widgets.load();
+      if (window.twttr?.widgets) {
+        window.twttr.widgets.load();
+      }
     }
 
-    if (document.querySelector('script[src="https://platform.twitter.com/widgets.js"]')) {
+    if (window.twttr?.widgets) {
       procesar();
+      return;
+    }
+
+    const existente = document.querySelector('script[src="https://platform.twitter.com/widgets.js"]');
+    if (existente) {
+      existente.addEventListener("load", procesar, { once: true });
       return;
     }
 
