@@ -55,7 +55,13 @@ export default async function NotaPage({ params }: Props) {
   }
 
   const relacionadas = await getNotasRelacionadas(articulo.seccion, articulo.slug);
-  const cuerpoMarkdown = normalizarMarkdown(articulo.cuerpo);
+  let cuerpoMarkdown = normalizarMarkdown(articulo.cuerpo);
+
+  if (/^https?:\/\//i.test(articulo.imagen)) {
+    const imagenRegex = new RegExp(`!\\[([^\\]]*)\\]\\(${articulo.imagen.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)\\n?`, 'm');
+    cuerpoMarkdown = cuerpoMarkdown.replace(imagenRegex, '');
+  }
+
   const youtubeId = articulo.video_url ? extraerYoutubeId(articulo.video_url) : null;
   const faqs = articulo.faqs ?? [];
 
