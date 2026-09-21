@@ -6,6 +6,8 @@ import { getNotasPorProvincia } from "@/lib/articles";
 import { redProvincias } from "@/lib/mock-data";
 import { slugify } from "@/lib/slugify";
 
+export const revalidate = 60;
+
 interface Props {
   params: Promise<{ slug: string }>;
 }

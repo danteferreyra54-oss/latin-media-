@@ -20,6 +20,7 @@ interface Props {
   articulos: Articulo[];
   adminKey: string;
   posiblesDuplicados: string[];
+  notasUltimaCorridaIds?: string[];
   ocultas?: boolean;
 }
 
@@ -30,9 +31,10 @@ function normalizar(texto: string): string {
     .toLowerCase();
 }
 
-export default function AdminArticleList({ articulos, adminKey, posiblesDuplicados, ocultas = false }: Props) {
+export default function AdminArticleList({ articulos, adminKey, posiblesDuplicados, notasUltimaCorridaIds = [], ocultas = false }: Props) {
   const [busqueda, setBusqueda] = useState("");
   const duplicados = useMemo(() => new Set(posiblesDuplicados), [posiblesDuplicados]);
+  const ultimaCorridaSet = useMemo(() => new Set(notasUltimaCorridaIds), [notasUltimaCorridaIds]);
 
   const filtrados = useMemo(() => {
     const query = normalizar(busqueda.trim());
@@ -68,11 +70,16 @@ export default function AdminArticleList({ articulos, adminKey, posiblesDuplicad
         <p style={{ color: "#8A8079", fontSize: "14px" }}>No hay notas para mostrar.</p>
       ) : (
         <div style={{ border: "1px solid #DDD5C8", borderRadius: "8px", overflow: "hidden" }}>
-          {filtrados.map((articulo, i) => (
+          {filtrados.map((articulo, i) => {
+            const esDeUltimaCorridq = ultimaCorridaSet.has(articulo.id);
+            return (
             <div
               key={articulo.id}
               className="admin-row"
-              style={{ borderTop: i === 0 ? "none" : "1px solid #E9E2D6" }}
+              style={{
+                borderTop: i === 0 ? "none" : "1px solid #E9E2D6",
+                ...(esDeUltimaCorridq ? { border: "2px solid #22C55E", borderRadius: "6px", margin: "8px 0", padding: "12px", background: "#FCFAF6" } : {})
+              }}
             >
               <Link href={`/admin/revisar/${articulo.slug}?key=${adminKey}`} className="admin-row-link">
                 <span className="admin-seccion">{articulo.seccion}</span>
@@ -117,7 +124,8 @@ export default function AdminArticleList({ articulos, adminKey, posiblesDuplicad
                 <DeleteButton slug={articulo.slug} titulo={articulo.titulo} adminKey={adminKey} />
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

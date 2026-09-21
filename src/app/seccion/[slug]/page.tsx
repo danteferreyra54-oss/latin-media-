@@ -7,6 +7,8 @@ import { getNotasPorSeccionPaginado } from "@/lib/articles";
 import { SLUG_A_SECCION } from "@/lib/nav";
 import type { Seccion } from "@/types/article";
 
+export const revalidate = 60;
+
 interface Props {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ page?: string }>;

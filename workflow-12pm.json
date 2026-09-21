@@ -1,0 +1,62 @@
+{
+  "name": "Article Sync to Sheets - 12 PM",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{"field": "hours", "value": 12}]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300],
+      "name": "Schedule - 12 PM",
+      "id": "node_schedule_12pm"
+    },
+    {
+      "parameters": {
+        "url": "https://ttjrcqvshgaoljsyxupe.supabase.co/rest/v1/articulos?select=titulo,seccion,fecha,slug&created_at=gte.{{$now.minus(24,'hours').toISO()}}&order=created_at.desc",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$secrets.SUPABASE_API_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$secrets.SUPABASE_API_KEY}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300],
+      "name": "Get Articles from Supabase",
+      "id": "node_supabase"
+    },
+    {
+      "parameters": {
+        "spreadsheetId": "={{$secrets.GOOGLE_SHEETS_SPREADSHEET_ID}}",
+        "range": "={{$secrets.GOOGLE_SHEETS_SHEET_NAME}}",
+        "values": "=[[item.titulo, item.seccion, item.fecha, \"https://latinmediaok.com/nota/\" + item.slug]]"
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [650, 300],
+      "name": "Append to Google Sheets",
+      "id": "node_sheets"
+    }
+  ],
+  "connections": {
+    "node_schedule_12pm": {
+      "main": [[{"node": "node_supabase", "type": "main", "index": 0}]]
+    },
+    "node_supabase": {
+      "main": [[{"node": "node_sheets", "type": "main", "index": 0}]]
+    }
+  }
+}

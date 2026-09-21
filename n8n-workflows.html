@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>n8n Workflows JSONs</title>
+  <style>
+    :root {
+      --bg: #f9f8f6;
+      --surface: #fff;
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --border: #e5e0da;
+      --accent: #0066cc;
+      --placeholder: #ff6b35;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #1a1a1a;
+        --surface: #2d2d2d;
+        --text: #f0f0f0;
+        --text-muted: #999;
+        --border: #444;
+        --accent: #66b3ff;
+        --placeholder: #ff8c42;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 24px 16px;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    h1 { font-size: 28px; margin-bottom: 8px; font-weight: 700; }
+    .subtitle { color: var(--text-muted); margin-bottom: 24px; font-size: 14px; }
+    .workflow { margin-bottom: 40px; }
+    .workflow-title { font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+    .workflow-meta { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      font-size: 12px;
+      font-family: "Monaco", "Courier New", monospace;
+      line-height: 1.4;
+    }
+    .placeholder {
+      background: rgba(255, 107, 53, 0.15);
+      color: var(--placeholder);
+      font-weight: 600;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .instructions {
+      background: var(--surface);
+      border-left: 4px solid var(--accent);
+      padding: 16px;
+      margin: 24px 0;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .instructions h3 { margin-bottom: 8px; }
+    .instructions ol { margin-left: 20px; }
+    .instructions li { margin-bottom: 6px; }
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    button:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>n8n Workflows: Article Sync to Google Sheets</h1>
+    <p class="subtitle">Two workflows configured for different times of day (7 AM and 12 PM, America/Argentina/Buenos_Aires)</p>
+
+    <div class="instructions">
+      <h3>Setup Instructions:</h3>
+      <ol>
+        <li>Copy the JSON for each workflow (buttons below)</li>
+        <li>In n8n, click "Import from URL or JSON"</li>
+        <li>Paste the JSON and import</li>
+        <li>Replace the placeholders:
+          <ul>
+            <li><span class="placeholder">SUPABASE_API_KEY</span> — Get from Supabase dashboard (Settings → API → anon/public key)</li>
+            <li><span class="placeholder">GOOGLE_SHEETS_SPREADSHEET_ID</span> — From the Google Sheets URL</li>
+            <li><span class="placeholder">GOOGLE_SHEETS_SHEET_NAME</span> — The exact sheet tab name</li>
+          </ul>
+        </li>
+        <li>Test and activate both workflows</li>
+      </ol>
+    </div>
+
+    <!-- Workflow 1: 7 AM -->
+    <div class="workflow">
+      <div class="workflow-title">Workflow 1: Daily 7 AM Sync</div>
+      <div class="workflow-meta">Disparador: 7:00 AM | Zona: America/Argentina/Buenos_Aires</div>
+      <pre id="workflow1-json"></pre>
+      <button onclick="copyToClipboard('workflow1-json')">Copy JSON</button>
+    </div>
+
+    <!-- Workflow 2: 12 PM -->
+    <div class="workflow">
+      <div class="workflow-title">Workflow 2: Daily 12 PM Sync</div>
+      <div class="workflow-meta">Disparador: 12:00 PM | Zona: America/Argentina/Buenos_Aires</div>
+      <pre id="workflow2-json"></pre>
+      <button onclick="copyToClipboard('workflow2-json')">Copy JSON</button>
+    </div>
+  </div>
+
+  <script>
+    const workflow1 = {
+      "name": "Article Sync to Sheets - 7 AM",
+      "nodes": [
+        {
+          "parameters": {
+            "rule": {
+              "interval": [{"field": "hours", "value": 7}]
+            }
+          },
+          "type": "n8n-nodes-base.scheduleTrigger",
+          "typeVersion": 1.1,
+          "position": [250, 300],
+          "name": "Schedule - 7 AM",
+          "id": "node_schedule_7am"
+        },
+        {
+          "parameters": {
+            "url": "https://ttjrcqvshgaoljsyxupe.supabase.co/rest/v1/articulos?select=titulo,seccion,fecha,slug&created_at=gte.{{$now.minus(24,'hours').toISO()}}&order=created_at.desc",
+            "authentication": "genericCredentialType",
+            "genericAuthType": "httpHeaderAuth",
+            "sendHeaders": true,
+            "headerParameters": {
+              "parameters": [
+                {
+                  "name": "apikey",
+                  "value": "={{$secrets.SUPABASE_API_KEY}}"
+                },
+                {
+                  "name": "Authorization",
+                  "value": "=Bearer {{$secrets.SUPABASE_API_KEY}}"
+                }
+              ]
+            }
+          },
+          "type": "n8n-nodes-base.httpRequest",
+          "typeVersion": 4.1,
+          "position": [450, 300],
+          "name": "Get Articles from Supabase",
+          "id": "node_supabase"
+        },
+        {
+          "parameters": {
+            "spreadsheetId": "={{$secrets.GOOGLE_SHEETS_SPREADSHEET_ID}}",
+            "range": "={{$secrets.GOOGLE_SHEETS_SHEET_NAME}}",
+            "values": "=[[item.titulo, item.seccion, item.fecha, \"https://latinmediaok.com/nota/\" + item.slug]]"
+          },
+          "type": "n8n-nodes-base.googleSheets",
+          "typeVersion": 4.4,
+          "position": [650, 300],
+          "name": "Append to Google Sheets",
+          "id": "node_sheets"
+        }
+      ],
+      "connections": {
+        "node_schedule_7am": {
+          "main": [[{"node": "node_supabase", "type": "main", "index": 0}]]
+        },
+        "node_supabase": {
+          "main": [[{"node": "node_sheets", "type": "main", "index": 0}]]
+        }
+      }
+    };
+
+    const workflow2 = {
+      "name": "Article Sync to Sheets - 12 PM",
+      "nodes": [
+        {
+          "parameters": {
+            "rule": {
+              "interval": [{"field": "hours", "value": 12}]
+            }
+          },
+          "type": "n8n-nodes-base.scheduleTrigger",
+          "typeVersion": 1.1,
+          "position": [250, 300],
+          "name": "Schedule - 12 PM",
+          "id": "node_schedule_12pm"
+        },
+        {
+          "parameters": {
+            "url": "https://ttjrcqvshgaoljsyxupe.supabase.co/rest/v1/articulos?select=titulo,seccion,fecha,slug&created_at=gte.{{$now.minus(24,'hours').toISO()}}&order=created_at.desc",
+            "authentication": "genericCredentialType",
+            "genericAuthType": "httpHeaderAuth",
+            "sendHeaders": true,
+            "headerParameters": {
+              "parameters": [
+                {
+                  "name": "apikey",
+                  "value": "={{$secrets.SUPABASE_API_KEY}}"
+                },
+                {
+                  "name": "Authorization",
+                  "value": "=Bearer {{$secrets.SUPABASE_API_KEY}}"
+                }
+              ]
+            }
+          },
+          "type": "n8n-nodes-base.httpRequest",
+          "typeVersion": 4.1,
+          "position": [450, 300],
+          "name": "Get Articles from Supabase",
+          "id": "node_supabase"
+        },
+        {
+          "parameters": {
+            "spreadsheetId": "={{$secrets.GOOGLE_SHEETS_SPREADSHEET_ID}}",
+            "range": "={{$secrets.GOOGLE_SHEETS_SHEET_NAME}}",
+            "values": "=[[item.titulo, item.seccion, item.fecha, \"https://latinmediaok.com/nota/\" + item.slug]]"
+          },
+          "type": "n8n-nodes-base.googleSheets",
+          "typeVersion": 4.4,
+          "position": [650, 300],
+          "name": "Append to Google Sheets",
+          "id": "node_sheets"
+        }
+      ],
+      "connections": {
+        "node_schedule_12pm": {
+          "main": [[{"node": "node_supabase", "type": "main", "index": 0}]]
+        },
+        "node_supabase": {
+          "main": [[{"node": "node_sheets", "type": "main", "index": 0}]]
+        }
+      }
+    };
+
+    document.getElementById('workflow1-json').textContent = JSON.stringify(workflow1, null, 2);
+    document.getElementById('workflow2-json').textContent = JSON.stringify(workflow2, null, 2);
+
+    function copyToClipboard(elementId) {
+      const text = document.getElementById(elementId).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('JSON copied to clipboard');
+      });
+    }
+  </script>
+</body>
+</html>

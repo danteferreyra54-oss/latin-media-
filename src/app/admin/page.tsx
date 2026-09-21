@@ -32,6 +32,20 @@ export default async function AdminPage({ searchParams }: Props) {
 
   const posiblesDuplicados = [...detectarPosiblesDuplicados(visibles)];
 
+  // Detectar notas de la última corrida: todas las del mismo minuto que la más reciente
+  const notasUltimaCorridaIds = (() => {
+    if (visibles.length === 0) return [];
+    const masReciente = new Date(visibles[0].fecha);
+    const minutoMasReciente = new Date(masReciente.getFullYear(), masReciente.getMonth(), masReciente.getDate(), masReciente.getHours(), masReciente.getMinutes());
+    return visibles
+      .filter((a) => {
+        const fecha = new Date(a.fecha);
+        const minutoNota = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate(), fecha.getHours(), fecha.getMinutes());
+        return minutoNota.getTime() === minutoMasReciente.getTime();
+      })
+      .map((a) => a.id);
+  })();
+
   return (
     <div
       style={{ minHeight: "100vh", background: "#FCFAF6", fontFamily: "var(--font-franklin, sans-serif)" }}
@@ -75,6 +89,7 @@ export default async function AdminPage({ searchParams }: Props) {
           articulos={visibles}
           adminKey={key}
           posiblesDuplicados={posiblesDuplicados}
+          notasUltimaCorridaIds={notasUltimaCorridaIds}
         />
 
         {ocultas.length > 0 && (

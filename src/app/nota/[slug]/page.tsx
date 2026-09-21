@@ -8,6 +8,7 @@ import ShareButton from "@/components/ShareButton";
 import SocialShareRow from "@/components/SocialShareRow";
 import InstagramEmbed from "@/components/InstagramEmbed";
 import TwitterEmbed from "@/components/TwitterEmbed";
+import PdfEmbed from "@/components/PdfEmbed";
 import { getArticuloPorSlug, getNotasRelacionadas } from "@/lib/articles";
 import { formatFechaLarga, formatNombreFuente, normalizarMarkdown } from "@/lib/format";
 import { SECCION_HREF } from "@/lib/nav";
@@ -50,6 +51,11 @@ const componentesMarkdown: Components = {
     if (props?.className?.includes("language-twitter")) {
       const url = String(props.children ?? "").trim();
       return <TwitterEmbed url={url} />;
+    }
+
+    if (props?.className?.includes("language-pdf")) {
+      const url = String(props.children ?? "").trim();
+      return <PdfEmbed url={url} />;
     }
 
     return <pre>{children}</pre>;

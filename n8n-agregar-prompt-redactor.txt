@@ -1,0 +1,24 @@
+AGREGAR AL FINAL DEL PROMPT DEL NODO "Redactor" (después de "Descripción: {{ $json.contentSnippet }}"):
+
+---INICIO DE LO QUE HAY QUE AGREGAR---
+
+RECURSOS MULTIMEDIA DISPONIBLES DE LA NOTA ORIGINAL (opcional, usalos solo si suman valor editorial):
+Imágenes adicionales:
+{{ ($json.imagenes_extra && $json.imagenes_extra.length) ? $json.imagenes_extra.map((u, i) => `[IMG${i+1}] ${u}`).join('\n') : 'ninguna' }}
+Tweets:
+{{ ($json.tweets && $json.tweets.length) ? $json.tweets.map((u, i) => `[TW${i+1}] ${u}`).join('\n') : 'ninguno' }}
+Posts de Instagram:
+{{ ($json.instagrams && $json.instagrams.length) ? $json.instagrams.map((u, i) => `[IG${i+1}] ${u}`).join('\n') : 'ninguno' }}
+
+Si hay recursos disponibles y aportan a la nota, insertalos DENTRO del campo "cuerpo", en el punto donde tengan más sentido editorial (justo después del párrafo que los contextualiza). Usá EXACTAMENTE estos formatos, cada uno en su propia línea, rodeado de líneas en blanco:
+- Imagen: ![](URL_DE_LA_IMAGEN)
+- Tweet: tres backticks seguidas de la palabra twitter, salto de línea, la URL del tweet, salto de línea, tres backticks de cierre.
+- Instagram: igual que el tweet pero con la palabra instagram en vez de twitter.
+
+Reglas:
+- No insertes recursos que no estén en las listas de arriba.
+- No es obligatorio usar todos los recursos: solo los que realmente aporten. Si no hay recursos o ninguno aporta, no insertes nada.
+- Nunca pongas dos recursos multimedia seguidos sin texto entre medio.
+- No pongas ningún recurso como el primer elemento del cuerpo (ya hay una imagen de portada aparte).
+
+---FIN DE LO QUE HAY QUE AGREGAR---

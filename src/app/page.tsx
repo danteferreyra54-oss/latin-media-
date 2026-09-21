@@ -12,6 +12,8 @@ import { getResumenDelDia } from "@/lib/resumen";
 import { formatHorariosEscalonados } from "@/lib/format";
 import { SECCION_HREF } from "@/lib/nav";
 
+export const revalidate = 60;
+
 const NOTAS_POR_SECCION = 6;
 
 export default async function Home() {
