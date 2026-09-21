@@ -6,14 +6,25 @@ interface Props {
   url: string;
 }
 
+declare global {
+  interface Window {
+    twttr?: {
+      widgets?: {
+        load: (el?: Element | null) => void;
+      };
+    };
+  }
+}
+
 export default function TwitterEmbed({ url }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (containerRef.current && typeof window !== "undefined") {
       const timer = setTimeout(() => {
-        if (window.twttr?.widgets) {
-          window.twttr.widgets.load(containerRef.current);
+        const twttr = (window as any).twttr;
+        if (twttr?.widgets) {
+          twttr.widgets.load(containerRef.current);
         }
       }, 100);
       return () => clearTimeout(timer);
