@@ -26,7 +26,15 @@ interface Props {
  * esos bloques puntuales y se reemplazan por los embeds reales; cualquier otro
  * bloque de código se muestra normal.
  */
+const DOMINIOS_IGNORAR = ["twimg.com", "twitter.com", "x.com/i/", "abs.twimg"];
+
 const componentesMarkdown: Components = {
+  img({ src, alt }) {
+    if (!src) return null;
+    if (DOMINIOS_IGNORAR.some((d) => src.includes(d))) return null;
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt={alt ?? ""} style={{ maxWidth: "100%", height: "auto" }} />;
+  },
   pre({ children }) {
     const hijo = Array.isArray(children) ? children[0] : children;
     const props =
