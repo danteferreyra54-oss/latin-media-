@@ -67,9 +67,9 @@ export default async function NotaPage({ params }: Props) {
   const relacionadas = await getNotasRelacionadas(articulo.seccion, articulo.slug);
   let cuerpoMarkdown = normalizarMarkdown(articulo.cuerpo);
 
+  // Quitar la primera imagen del cuerpo: el hero ya la muestra arriba
   if (/^https?:\/\//i.test(articulo.imagen)) {
-    const imagenRegex = new RegExp(`!\\[([^\\]]*)\\]\\(${articulo.imagen.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)\\n?`, 'm');
-    cuerpoMarkdown = cuerpoMarkdown.replace(imagenRegex, '');
+    cuerpoMarkdown = cuerpoMarkdown.replace(/!\[[^\]]*\]\([^)]+\)\n?/, '');
   }
 
   const youtubeId = articulo.video_url ? extraerYoutubeId(articulo.video_url) : null;
