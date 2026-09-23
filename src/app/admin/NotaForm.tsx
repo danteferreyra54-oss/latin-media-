@@ -90,7 +90,7 @@ function ToolbarButton({
   );
 }
 
-function Toolbar({ editor, adminKey }: { editor: Editor | null; adminKey: string }) {
+function Toolbar({ editor }: { editor: Editor | null }) {
   const [subiendo, setSubiendo] = useState(false);
 
   const agregarLink = useCallback(() => {
@@ -155,7 +155,7 @@ function Toolbar({ editor, adminKey }: { editor: Editor | null; adminKey: string
       try {
         const formData = new FormData();
         formData.append("file", file);
-        const resultado = await subirImagen(adminKey, formData);
+        const resultado = await subirImagen(formData);
         if (resultado.ok) {
           editor.chain().focus().setImage({ src: resultado.url }).run();
         } else {
@@ -168,7 +168,7 @@ function Toolbar({ editor, adminKey }: { editor: Editor | null; adminKey: string
       }
     };
     input.click();
-  }, [editor, adminKey]);
+  }, [editor]);
 
   if (!editor) return null;
 
@@ -251,7 +251,6 @@ function Toolbar({ editor, adminKey }: { editor: Editor | null; adminKey: string
 }
 
 interface Props {
-  adminKey: string;
   valoresIniciales?: DatosNota;
   guardar: (datos: DatosNota) => Promise<ResultadoGuardado>;
   textoBoton?: string;
@@ -283,7 +282,6 @@ const estilosEditor = `
 `;
 
 export default function NotaForm({
-  adminKey,
   valoresIniciales,
   guardar,
   textoBoton = "Guardar nota",
@@ -319,7 +317,7 @@ export default function NotaForm({
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const resultado = await subirImagen(adminKey, formData);
+      const resultado = await subirImagen(formData);
       if (resultado.ok) {
         setImagenPortada(resultado.url);
       } else {
@@ -365,7 +363,7 @@ export default function NotaForm({
             try {
               const formData = new FormData();
               formData.append("file", file);
-              const resultado = await subirImagen(adminKey, formData);
+              const resultado = await subirImagen(formData);
               if (resultado.ok) {
                 const nodo = view.state.schema.nodes.image.create({ src: resultado.url });
                 view.dispatch(view.state.tr.replaceSelectionWith(nodo));
@@ -589,7 +587,7 @@ export default function NotaForm({
             {contarPalabras(editor?.getText() ?? "")} palabras
           </span>
         </div>
-        <Toolbar editor={editor} adminKey={adminKey} />
+        <Toolbar editor={editor} />
         <div style={{ border: `1px solid ${rule}`, borderRadius: "0 0 6px 6px", background: "#fff" }}>
           <style>{estilosEditor}</style>
           <div className="editor-content">
@@ -692,7 +690,7 @@ export default function NotaForm({
         <p style={{ background: "#EAF3EA", color: "#1E5E2A", padding: "12px 14px", borderRadius: "4px", fontSize: "13px" }}>
           {mensajeExito} <a href={`/nota/${estado.slug}`} target="_blank" rel="noopener noreferrer">Verla en vivo</a>
           {" · "}
-          <a href={`/admin/revisar/${estado.slug}?key=${adminKey}`}>Revisarla</a>
+          <a href={`/admin/revisar/${estado.slug}`}>Revisarla</a>
         </p>
       )}
 
@@ -718,7 +716,7 @@ export default function NotaForm({
         <button
           type="button"
           disabled={pending}
-          onClick={() => router.push(`/admin?key=${adminKey}`)}
+          onClick={() => router.push("/admin")}
           style={{
             background: "none",
             color: ink,

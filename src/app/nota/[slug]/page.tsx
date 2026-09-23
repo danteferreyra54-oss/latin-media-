@@ -35,7 +35,7 @@ const componentesMarkdown: Components = {
     if (!src || typeof src !== "string") return null;
     if (DOMINIOS_IGNORAR.some((d) => src.includes(d))) return null;
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={alt ?? ""} style={{ maxWidth: "100%", height: "auto" }} />;
+    return <img src={src} alt={alt ?? ""} referrerPolicy="no-referrer" style={{ maxWidth: "100%", height: "auto" }} />;
   },
   pre({ children }) {
     const hijo = Array.isArray(children) ? children[0] : children;

@@ -16,7 +16,6 @@ interface ArticuloRevision {
 
 interface Props {
   articulo: ArticuloRevision;
-  adminKey: string;
 }
 
 type Estado =
@@ -24,7 +23,7 @@ type Estado =
   | { tipo: "ok"; mensaje: string }
   | { tipo: "error"; mensaje: string };
 
-export default function RevisionForm({ articulo, adminKey }: Props) {
+export default function RevisionForm({ articulo }: Props) {
   const [titulo, setTitulo] = useState(articulo.titulo);
   const [bajada, setBajada] = useState(articulo.bajada);
   const [cuerpo, setCuerpo] = useState(articulo.cuerpo);
@@ -97,7 +96,7 @@ export default function RevisionForm({ articulo, adminKey }: Props) {
             onClick={() =>
               ejecutar(
                 () =>
-                  aprobarNota(adminKey, {
+                  aprobarNota({
                     slug: articulo.slug,
                     titulo: articulo.titulo,
                     bajada: articulo.bajada,
@@ -116,7 +115,7 @@ export default function RevisionForm({ articulo, adminKey }: Props) {
             disabled={pending}
             onClick={() =>
               ejecutar(
-                () => corregirYAprobarNota(adminKey, { slug: articulo.slug, titulo, bajada, cuerpo }),
+                () => corregirYAprobarNota({ slug: articulo.slug, titulo, bajada, cuerpo }),
                 "Cambios guardados y nota aprobada."
               )
             }
@@ -129,7 +128,7 @@ export default function RevisionForm({ articulo, adminKey }: Props) {
             className="revision-btn revision-btn-rechazar"
             disabled={pending}
             onClick={() =>
-              ejecutar(() => rechazarNota(adminKey, articulo.slug), "Nota rechazada.")
+              ejecutar(() => rechazarNota(articulo.slug), "Nota rechazada.")
             }
           >
             Rechazar

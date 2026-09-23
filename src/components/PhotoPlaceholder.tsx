@@ -18,10 +18,12 @@ export default function PhotoPlaceholder({ variante = "", className = "", childr
     // HTML-encodeada al scrapearla). Eso rompe query strings con auth
     // token, así que se limpia acá antes de usarla como src.
     const src = variante.replace(/&amp;/g, "&");
+    // no-referrer: algunos medios (Comercio y Justicia, Conclusión) bloquean
+    // sus fotos con 403 cuando el pedido dice que viene de otro sitio.
     return (
       <div className={`ph-img ${className}`.trim()}>
         {/* eslint-disable-next-line @next/next/no-img-element -- URLs externas arbitrarias del pipeline */}
-        <img src={src} alt="" loading="lazy" decoding="async" />
+        <img src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
         {children}
       </div>
     );

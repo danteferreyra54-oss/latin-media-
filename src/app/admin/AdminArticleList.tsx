@@ -18,7 +18,6 @@ interface Articulo {
 
 interface Props {
   articulos: Articulo[];
-  adminKey: string;
   /** id de la nota -> título de la otra nota parecida */
   posiblesDuplicados: Record<string, string>;
   notasUltimaCorridaIds?: string[];
@@ -32,7 +31,7 @@ function normalizar(texto: string): string {
     .toLowerCase();
 }
 
-export default function AdminArticleList({ articulos, adminKey, posiblesDuplicados, notasUltimaCorridaIds = [], ocultas = false }: Props) {
+export default function AdminArticleList({ articulos, posiblesDuplicados, notasUltimaCorridaIds = [], ocultas = false }: Props) {
   const [busqueda, setBusqueda] = useState("");
   const duplicados = posiblesDuplicados;
   const ultimaCorridaSet = useMemo(() => new Set(notasUltimaCorridaIds), [notasUltimaCorridaIds]);
@@ -82,7 +81,7 @@ export default function AdminArticleList({ articulos, adminKey, posiblesDuplicad
                 ...(esDeUltimaCorridq ? { border: "2px solid #22C55E", borderRadius: "6px", margin: "8px 0", padding: "12px", background: "#FCFAF6" } : {})
               }}
             >
-              <Link href={`/admin/revisar/${articulo.slug}?key=${adminKey}`} className="admin-row-link">
+              <Link href={`/admin/revisar/${articulo.slug}`} className="admin-row-link">
                 <span className="admin-seccion">{articulo.seccion}</span>
                 <span className="admin-titulo">
                   <span className="admin-titulo-texto">{articulo.titulo}</span>
@@ -108,7 +107,7 @@ export default function AdminArticleList({ articulos, adminKey, posiblesDuplicad
 
               <div className="admin-acciones">
                 <Link
-                  href={`/admin/editar/${articulo.slug}?key=${adminKey}`}
+                  href={`/admin/editar/${articulo.slug}`}
                   style={{
                     flexShrink: 0,
                     border: "1px solid #191512",
@@ -126,11 +125,10 @@ export default function AdminArticleList({ articulos, adminKey, posiblesDuplicad
                 <VisibilityButton
                   slug={articulo.slug}
                   titulo={articulo.titulo}
-                  adminKey={adminKey}
                   oculta={ocultas}
                 />
 
-                <DeleteButton slug={articulo.slug} titulo={articulo.titulo} adminKey={adminKey} />
+                <DeleteButton slug={articulo.slug} titulo={articulo.titulo} />
               </div>
             </div>
             );

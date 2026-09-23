@@ -1,13 +1,8 @@
 "use server";
 
+import { verificarSesion } from "@/lib/auth";
 import { headers } from "next/headers";
 import { createAdminClient } from "@/utils/supabase/admin";
-
-function verificarClave(clave: string) {
-  if (!process.env.ADMIN_KEY || clave !== process.env.ADMIN_KEY) {
-    throw new Error("No autorizado");
-  }
-}
 
 interface DatosNota {
   titulo: string;
@@ -23,8 +18,8 @@ interface DatosNota {
 export type ResultadoSubida = { ok: true; url: string } | { ok: false; error: string };
 
 /** Sube una imagen pegada en el editor al bucket "imagenes" y devuelve su URL pública. */
-export async function subirImagen(clave: string, formData: FormData): Promise<ResultadoSubida> {
-  verificarClave(clave);
+export async function subirImagen(formData: FormData): Promise<ResultadoSubida> {
+  await verificarSesion();
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -55,8 +50,8 @@ export type ResultadoGuardado = { ok: true; slug: string } | { ok: false; error:
  * (validación, duplicados): Next.js oculta el mensaje real de cualquier error
  * lanzado desde una Server Action en producción y lo reemplaza por un React
  * error #441 genérico, así que estos casos viajan como datos, no como throw. */
-export async function crearNota(clave: string, datos: DatosNota): Promise<ResultadoGuardado> {
-  verificarClave(clave);
+export async function crearNota(datos: DatosNota): Promise<ResultadoGuardado> {
+  await verificarSesion();
 
   if (!process.env.ARTICLES_API_KEY) {
     return { ok: false, error: "Falta configurar ARTICLES_API_KEY." };

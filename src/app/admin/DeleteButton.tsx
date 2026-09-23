@@ -6,10 +6,9 @@ import { eliminarNota } from "./actions";
 interface Props {
   slug: string;
   titulo: string;
-  adminKey: string;
 }
 
-export default function DeleteButton({ slug, titulo, adminKey }: Props) {
+export default function DeleteButton({ slug, titulo }: Props) {
   const [pending, startTransition] = useTransition();
 
   function eliminar() {
@@ -17,7 +16,7 @@ export default function DeleteButton({ slug, titulo, adminKey }: Props) {
 
     startTransition(async () => {
       try {
-        await eliminarNota(adminKey, slug);
+        await eliminarNota(slug);
       } catch (error) {
         window.alert(error instanceof Error ? error.message : "No se pudo eliminar la nota.");
       }

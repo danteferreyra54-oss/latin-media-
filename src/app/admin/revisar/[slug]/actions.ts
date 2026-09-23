@@ -1,12 +1,7 @@
 "use server";
 
+import { verificarSesion } from "@/lib/auth";
 import { createAdminClient } from "@/utils/supabase/admin";
-
-function verificarClave(clave: string) {
-  if (!process.env.ADMIN_KEY || clave !== process.env.ADMIN_KEY) {
-    throw new Error("No autorizado");
-  }
-}
 
 async function llamarWebhook(url: string | undefined, payload: unknown) {
   if (!url) {
@@ -34,14 +29,14 @@ interface DatosNota {
 }
 
 /** Aprueba la nota tal cual está, sin guardar cambios. */
-export async function aprobarNota(clave: string, datos: DatosNota) {
-  verificarClave(clave);
+export async function aprobarNota(datos: DatosNota) {
+  await verificarSesion();
   await llamarWebhook(process.env.N8N_WEBHOOK_APROBAR, datos);
 }
 
 /** Guarda los cambios en Supabase y después aprueba con el contenido corregido. */
-export async function corregirYAprobarNota(clave: string, datos: DatosNota) {
-  verificarClave(clave);
+export async function corregirYAprobarNota(datos: DatosNota) {
+  await verificarSesion();
 
   const supabase = createAdminClient();
   const { error } = await supabase
@@ -57,7 +52,7 @@ export async function corregirYAprobarNota(clave: string, datos: DatosNota) {
 }
 
 /** Rechaza la nota (no guarda cambios de edición, si los hubiera). */
-export async function rechazarNota(clave: string, slug: string) {
-  verificarClave(clave);
+export async function rechazarNota(slug: string) {
+  await verificarSesion();
   await llamarWebhook(process.env.N8N_WEBHOOK_RECHAZAR, { slug });
 }

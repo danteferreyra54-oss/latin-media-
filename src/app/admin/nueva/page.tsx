@@ -1,20 +1,12 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import NotaForm from "../NotaForm";
+import { exigirSesion } from "@/lib/auth";
 import { crearNota } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-interface Props {
-  searchParams: Promise<{ key?: string }>;
-}
-
-export default async function NuevaNotaPage({ searchParams }: Props) {
-  const { key } = await searchParams;
-
-  if (!key || !process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) {
-    redirect("/");
-  }
+export default async function NuevaNotaPage() {
+  await exigirSesion("/admin/nueva");
 
   return (
     <div style={{ minHeight: "100vh", background: "#FCFAF6" }}>
@@ -28,13 +20,13 @@ export default async function NuevaNotaPage({ searchParams }: Props) {
         }}
       >
         <Link
-          href={`/admin?key=${key}`}
+          href="/admin"
           style={{ color: "#FCFAF6", fontSize: "16px", fontFamily: "Georgia, serif", textDecoration: "none" }}
         >
           Latin<span style={{ color: "#A81419" }}>Media</span> — Admin
         </Link>
         <Link
-          href={`/admin?key=${key}`}
+          href="/admin"
           style={{ color: "#8A8079", fontSize: "13px", textDecoration: "none" }}
         >
           ← Volver al listado
@@ -45,7 +37,7 @@ export default async function NuevaNotaPage({ searchParams }: Props) {
         <h1 style={{ fontSize: "18px", fontWeight: 500, marginBottom: "20px", color: "#191512" }}>
           Nueva nota
         </h1>
-        <NotaForm adminKey={key} guardar={crearNota.bind(null, key)} textoBoton="Guardar nota" mensajeExito="Nota creada." />
+        <NotaForm guardar={crearNota} textoBoton="Guardar nota" mensajeExito="Nota creada." />
       </div>
     </div>
   );

@@ -1,23 +1,19 @@
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createAdminClient } from "@/utils/supabase/admin";
 import NotaForm from "../../NotaForm";
+import { exigirSesion } from "@/lib/auth";
 import { actualizarNota } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ key?: string }>;
 }
 
-export default async function EditarNotaPage({ params, searchParams }: Props) {
+export default async function EditarNotaPage({ params }: Props) {
   const { slug } = await params;
-  const { key } = await searchParams;
-
-  if (!key || !process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) {
-    redirect("/");
-  }
+  await exigirSesion(`/admin/editar/${slug}`);
 
   const supabase = createAdminClient();
   const { data: articulo } = await supabase
@@ -42,13 +38,13 @@ export default async function EditarNotaPage({ params, searchParams }: Props) {
         }}
       >
         <Link
-          href={`/admin?key=${key}`}
+          href="/admin"
           style={{ color: "#FCFAF6", fontSize: "16px", fontFamily: "Georgia, serif", textDecoration: "none" }}
         >
           Latin<span style={{ color: "#A81419" }}>Media</span> — Admin
         </Link>
         <Link
-          href={`/admin?key=${key}`}
+          href="/admin"
           style={{ color: "#8A8079", fontSize: "13px", textDecoration: "none" }}
         >
           ← Volver al listado
@@ -60,9 +56,8 @@ export default async function EditarNotaPage({ params, searchParams }: Props) {
           Editar nota
         </h1>
         <NotaForm
-          adminKey={key}
           valoresIniciales={articulo}
-          guardar={actualizarNota.bind(null, key, slug)}
+          guardar={actualizarNota.bind(null, slug)}
           textoBoton="Guardar cambios"
           mensajeExito="Cambios guardados."
         />

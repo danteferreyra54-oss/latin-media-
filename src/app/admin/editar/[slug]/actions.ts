@@ -1,28 +1,21 @@
 "use server";
 
+import { verificarSesion } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { slugify } from "@/lib/slugify";
 import type { DatosNota } from "../../NotaForm";
 import type { ResultadoGuardado } from "../../nueva/actions";
 
-function verificarClave(clave: string) {
-  if (!process.env.ADMIN_KEY || clave !== process.env.ADMIN_KEY) {
-    throw new Error("No autorizado");
-  }
-}
-
 /** Actualiza una nota existente. Filtra por el slug original; si el usuario
  * editó el campo slug, la fila pasa a tener el nuevo valor (saneado).
  * Devuelve un resultado en vez de lanzar excepciones para errores esperados:
  * Next.js oculta el mensaje real de cualquier error lanzado desde una Server
  * Action en producción y lo reemplaza por un React error #441 genérico. */
-export async function actualizarNota(
-  clave: string,
-  slugOriginal: string,
+export async function actualizarNota(slugOriginal: string,
   datos: DatosNota
 ): Promise<ResultadoGuardado> {
-  verificarClave(clave);
+  await verificarSesion();
 
   const supabase = createAdminClient();
   const nuevoSlug = datos.slug ? slugify(datos.slug) : slugOriginal;

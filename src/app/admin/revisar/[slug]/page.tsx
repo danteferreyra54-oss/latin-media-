@@ -1,19 +1,15 @@
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { exigirSesion } from "@/lib/auth";
 import RevisionForm from "./RevisionForm";
 
 interface Props {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ key?: string }>;
 }
 
-export default async function RevisarPage({ params, searchParams }: Props) {
+export default async function RevisarPage({ params }: Props) {
   const { slug } = await params;
-  const { key } = await searchParams;
-
-  if (!key || !process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) {
-    redirect("/");
-  }
+  await exigirSesion(`/admin/revisar/${slug}`);
 
   const supabase = createAdminClient();
   const { data: articulo } = await supabase
@@ -26,5 +22,5 @@ export default async function RevisarPage({ params, searchParams }: Props) {
     notFound();
   }
 
-  return <RevisionForm articulo={articulo} adminKey={key} />;
+  return <RevisionForm articulo={articulo} />;
 }

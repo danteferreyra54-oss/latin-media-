@@ -6,11 +6,10 @@ import { cambiarVisibilidadNota } from "./actions";
 interface Props {
   slug: string;
   titulo: string;
-  adminKey: string;
   oculta: boolean;
 }
 
-export default function VisibilityButton({ slug, titulo, adminKey, oculta }: Props) {
+export default function VisibilityButton({ slug, titulo, oculta }: Props) {
   const [pending, startTransition] = useTransition();
 
   function alternar() {
@@ -21,7 +20,7 @@ export default function VisibilityButton({ slug, titulo, adminKey, oculta }: Pro
 
     startTransition(async () => {
       try {
-        await cambiarVisibilidadNota(adminKey, slug, !oculta);
+        await cambiarVisibilidadNota(slug, !oculta);
       } catch (error) {
         window.alert(error instanceof Error ? error.message : "No se pudo actualizar la nota.");
       }

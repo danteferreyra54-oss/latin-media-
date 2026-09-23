@@ -1,21 +1,14 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { detectarPosiblesDuplicados } from "@/lib/duplicados";
+import { exigirSesion } from "@/lib/auth";
+import { cerrarSesion } from "./login/actions";
 import AdminArticleList from "./AdminArticleList";
 
 export const dynamic = "force-dynamic";
 
-interface Props {
-  searchParams: Promise<{ key?: string }>;
-}
-
-export default async function AdminPage({ searchParams }: Props) {
-  const { key } = await searchParams;
-
-  if (!key || !process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) {
-    redirect("/");
-  }
+export default async function AdminPage() {
+  await exigirSesion("/admin");
 
   const supabase = createAdminClient();
   const [{ data: articulos }, { count: totalNotas }] = await Promise.all([
@@ -64,19 +57,29 @@ export default async function AdminPage({ searchParams }: Props) {
         <span style={{ color: "#FCFAF6", fontSize: "16px", fontFamily: "Georgia, serif" }}>
           Latin<span style={{ color: "#A81419" }}>Media</span> — Admin
         </span>
-        <Link
-          href={`/admin/nueva?key=${key}`}
-          style={{
-            background: "#A81419",
-            color: "#FCFAF6",
-            padding: "6px 16px",
-            borderRadius: "6px",
-            fontSize: "13px",
-            textDecoration: "none",
-          }}
-        >
-          + Nueva nota
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <form action={cerrarSesion}>
+            <button
+              type="submit"
+              style={{ background: "none", border: "none", color: "#8A8079", fontSize: "13px", cursor: "pointer", padding: 0 }}
+            >
+              Cerrar sesión
+            </button>
+          </form>
+          <Link
+            href="/admin/nueva"
+            style={{
+              background: "#A81419",
+              color: "#FCFAF6",
+              padding: "6px 16px",
+              borderRadius: "6px",
+              fontSize: "13px",
+              textDecoration: "none",
+            }}
+          >
+            + Nueva nota
+          </Link>
+        </div>
       </div>
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "24px 16px" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
@@ -87,7 +90,6 @@ export default async function AdminPage({ searchParams }: Props) {
         </div>
         <AdminArticleList
           articulos={visibles}
-          adminKey={key}
           posiblesDuplicados={posiblesDuplicados}
           notasUltimaCorridaIds={notasUltimaCorridaIds}
         />
@@ -100,7 +102,7 @@ export default async function AdminPage({ searchParams }: Props) {
                 {ocultas.length} nota{ocultas.length === 1 ? "" : "s"}
               </span>
             </div>
-            <AdminArticleList articulos={ocultas} adminKey={key} posiblesDuplicados={{}} ocultas />
+            <AdminArticleList articulos={ocultas} posiblesDuplicados={{}} ocultas />
           </div>
         )}
       </div>
