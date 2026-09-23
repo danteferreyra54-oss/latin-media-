@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bodoni_Moda, Frank_Ruhl_Libre, Libre_Franklin, Montserrat } from "next/font/google";
+import { Bodoni_Moda, Merriweather, Montserrat, Source_Sans_3 } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Analytics } from '@vercel/analytics/next'
@@ -11,17 +11,17 @@ const bodoniModa = Bodoni_Moda({
   style: ["normal", "italic"],
 });
 
-const frankRuhlLibre = Frank_Ruhl_Libre({
-  variable: "--font-frank-ruhl",
+const merriweather = Merriweather({
+  variable: "--font-merriweather",
   subsets: ["latin"],
-  weight: ["400", "500", "700", "800", "900"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
 });
 
-const libreFranklin = Libre_Franklin({
-  variable: "--font-libre-franklin",
+const sourceSans = Source_Sans_3({
+  variable: "--font-source-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  style: ["normal", "italic"],
+  weight: ["400", "600"],
 });
 
 const montserrat = Montserrat({
@@ -34,17 +34,20 @@ export const metadata: Metadata = {
   title: "Latin Media",
   description:
     "Noticias de todo el país. Ocho redacciones, una sola vara: contar lo que pasa, claro y sin vueltas.",
+  verification: {
+    other: { "facebook-domain-verification": "h0ivoj7ezkfaz91leqa0ce8sjb4uxl" },
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FCFAF6",
+  themeColor: "#F4EFDF",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es-AR"
-      className={`${bodoniModa.variable} ${frankRuhlLibre.variable} ${libreFranklin.variable} ${montserrat.variable}`}
+      className={`${bodoniModa.variable} ${merriweather.variable} ${sourceSans.variable} ${montserrat.variable}`}
     >
   <body>
   {children}

@@ -1,111 +1,72 @@
 import SiteHeader from "@/components/SiteHeader";
-import Hero from "@/components/Hero";
-import GrillaSecundaria from "@/components/GrillaSecundaria";
-import UltimasNoticiasSidebar from "@/components/UltimasNoticiasSidebar";
-import ResumenDelDia from "@/components/ResumenDelDia";
-import VideoSection from "@/components/VideoSection";
-import SectionGrid from "@/components/SectionGrid";
 import SiteFooter from "@/components/SiteFooter";
+import HpPortadaSuperior from "@/components/hp/HpPortadaSuperior";
+import HpCinco from "@/components/hp/HpCinco";
+import HpVideos from "@/components/hp/HpVideos";
+import HpSeccion from "@/components/hp/HpSeccion";
 import { getArticuloPrincipal, getNotasPorSeccion, getNotasRecientes } from "@/lib/articles";
 import { getVideosDestacados } from "@/lib/videos";
 import { getResumenDelDia } from "@/lib/resumen";
 import { formatHorariosEscalonados } from "@/lib/format";
 import { SECCION_HREF } from "@/lib/nav";
+import type { ArticuloHome, ItemUltimasNoticias } from "@/types/article";
 
 export const revalidate = 60;
 
-const NOTAS_POR_SECCION = 6;
+const NOTAS_POR_SECCION = 4;
 
-export default async function Home() {
-  const articuloPrincipal = await getArticuloPrincipal();
-
-  const [
-    recientes,
-    notasPolitica,
-    notasEconomia,
-    notasSociedad,
-    notasPoliciales,
-    notasEspectaculos,
-    videos,
-    resumenDelDia,
-  ] = await Promise.all([
-    articuloPrincipal ? getNotasRecientes(articuloPrincipal.slug, 16) : Promise.resolve([]),
-    getNotasPorSeccion("Política", NOTAS_POR_SECCION),
-    getNotasPorSeccion("Economía", NOTAS_POR_SECCION),
-    getNotasPorSeccion("Sociedad", NOTAS_POR_SECCION),
-    getNotasPorSeccion("Policiales", NOTAS_POR_SECCION),
-    getNotasPorSeccion("Espectáculos", NOTAS_POR_SECCION),
-    getVideosDestacados(),
-    getResumenDelDia(),
-  ]);
-
-  // Un único listado de "recientes" (excluyendo la principal) se reparte en
-  // dos bloques sin overlap: 5 para la grilla mixta, y el resto para el
-  // sidebar de "Últimas noticias".
-  const grillaMixta = recientes.slice(0, 5);
-  const notasSidebar = recientes.slice(5, 15);
-  const horasSidebar = formatHorariosEscalonados(notasSidebar);
-  const ultimasNoticias = notasSidebar.map((nota, idx) => ({
+function aItems(notas: ArticuloHome[]): ItemUltimasNoticias[] {
+  const horas = formatHorariosEscalonados(notas);
+  return notas.map((nota, idx) => ({
     slug: nota.slug,
     titulo: nota.titulo,
     seccion: nota.seccion,
-    hora: horasSidebar[idx],
+    hora: horas[idx],
     imagen: nota.imagen,
   }));
+}
+
+export default async function Home() {
+  const principal = await getArticuloPrincipal();
+
+  const [recientes, politica, economia, sociedad, policiales, espectaculos, videos, resumen] =
+    await Promise.all([
+      principal ? getNotasRecientes(principal.slug, 16) : Promise.resolve([]),
+      getNotasPorSeccion("Política", NOTAS_POR_SECCION),
+      getNotasPorSeccion("Economía", NOTAS_POR_SECCION),
+      getNotasPorSeccion("Sociedad", NOTAS_POR_SECCION),
+      getNotasPorSeccion("Policiales", NOTAS_POR_SECCION),
+      getNotasPorSeccion("Espectáculos", NOTAS_POR_SECCION),
+      getVideosDestacados(),
+      getResumenDelDia(),
+    ]);
 
   return (
     <>
       <SiteHeader />
 
       <main className="page-fade">
-        <div className="wrap portada-layout">
-          <div className="portada-main">
-            {articuloPrincipal && <Hero articulo={articuloPrincipal} />}
+        <div className="wrap hp">
+          <HpPortadaSuperior
+            principal={principal}
+            izquierda={aItems(recientes.slice(0, 6))}
+            derecha={aItems(recientes.slice(6, 12))}
+            centro={aItems(recientes.slice(12, 16))}
+          />
 
-            <GrillaSecundaria notas={grillaMixta} />
+          <HpCinco items={resumen} />
 
-            <ResumenDelDia items={resumenDelDia} />
+          <HpVideos videos={videos} />
 
-            <div className="sections">
-              <SectionGrid
-                titulo="Política"
-                href={SECCION_HREF["Política"]}
-                notas={notasPolitica}
-                columnas="grid3"
-              />
-              <SectionGrid
-                titulo="Economía"
-                href={SECCION_HREF["Economía"]}
-                notas={notasEconomia}
-                columnas="grid3"
-              />
-
-              <VideoSection videos={videos} />
-
-              <SectionGrid
-                titulo="Sociedad"
-                href={SECCION_HREF["Sociedad"]}
-                notas={notasSociedad}
-                columnas="grid3"
-              />
-              <SectionGrid
-                titulo="Policiales"
-                href={SECCION_HREF["Policiales"]}
-                notas={notasPoliciales}
-                columnas="grid3"
-              />
-              <SectionGrid
-                titulo="Espectáculos"
-                href={SECCION_HREF["Espectáculos"]}
-                notas={notasEspectaculos}
-                columnas="grid3"
-              />
-            </div>
-          </div>
-
-          <aside className="portada-sidebar">
-            <UltimasNoticiasSidebar items={ultimasNoticias} />
-          </aside>
+          <HpSeccion titulo="Política" href={SECCION_HREF["Política"]} notas={politica} />
+          <HpSeccion titulo="Economía" href={SECCION_HREF["Economía"]} notas={economia} />
+          <HpSeccion titulo="Sociedad" href={SECCION_HREF["Sociedad"]} notas={sociedad} />
+          <HpSeccion titulo="Policiales" href={SECCION_HREF["Policiales"]} notas={policiales} />
+          <HpSeccion
+            titulo="Espectáculos"
+            href={SECCION_HREF["Espectáculos"]}
+            notas={espectaculos}
+          />
         </div>
       </main>
 

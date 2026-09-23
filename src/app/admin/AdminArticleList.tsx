@@ -19,7 +19,8 @@ interface Articulo {
 interface Props {
   articulos: Articulo[];
   adminKey: string;
-  posiblesDuplicados: string[];
+  /** id de la nota -> título de la otra nota parecida */
+  posiblesDuplicados: Record<string, string>;
   notasUltimaCorridaIds?: string[];
   ocultas?: boolean;
 }
@@ -33,7 +34,7 @@ function normalizar(texto: string): string {
 
 export default function AdminArticleList({ articulos, adminKey, posiblesDuplicados, notasUltimaCorridaIds = [], ocultas = false }: Props) {
   const [busqueda, setBusqueda] = useState("");
-  const duplicados = useMemo(() => new Set(posiblesDuplicados), [posiblesDuplicados]);
+  const duplicados = posiblesDuplicados;
   const ultimaCorridaSet = useMemo(() => new Set(notasUltimaCorridaIds), [notasUltimaCorridaIds]);
 
   const filtrados = useMemo(() => {
@@ -85,15 +86,23 @@ export default function AdminArticleList({ articulos, adminKey, posiblesDuplicad
                 <span className="admin-seccion">{articulo.seccion}</span>
                 <span className="admin-titulo">
                   <span className="admin-titulo-texto">{articulo.titulo}</span>
-                  {duplicados.has(articulo.id) && (
-                    <span className="admin-badge-dup" title="Otra nota reciente comparte palabras clave del título">
+                  {duplicados[articulo.id] && (
+                    <span
+                      className="admin-badge-dup"
+                      title={`Se parece a: "${duplicados[articulo.id]}"`}
+                    >
                       posible duplicado
                     </span>
                   )}
                 </span>
                 <span className="admin-autor">{articulo.autor}</span>
                 <span className="admin-fecha">
-                  {new Date(articulo.fecha).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" })}
+                  {new Date(articulo.fecha).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" })}{" "}
+                  {new Date(articulo.fecha).toLocaleTimeString("es-AR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })}
                 </span>
               </Link>
 

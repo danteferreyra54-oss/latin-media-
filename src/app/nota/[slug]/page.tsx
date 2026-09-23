@@ -10,8 +10,9 @@ import InstagramEmbed from "@/components/InstagramEmbed";
 import TwitterEmbed from "@/components/TwitterEmbed";
 import PdfEmbed from "@/components/PdfEmbed";
 import { getArticuloPorSlug, getNotasRelacionadas } from "@/lib/articles";
-import { formatFechaLarga, formatNombreFuente, normalizarMarkdown } from "@/lib/format";
+import { claveFoto, formatFechaLarga, formatNombreFuente, normalizarMarkdown } from "@/lib/format";
 import { SECCION_HREF } from "@/lib/nav";
+import { claseSeccion } from "@/components/hp/seccionColor";
 import { extraerYoutubeId, extraerDailymotionId } from "@/lib/youtube";
 
 export const revalidate = 60;
@@ -62,6 +63,31 @@ const componentesMarkdown: Components = {
   },
 };
 
+/**
+ * El video va dentro del cuerpo, después del 3.er párrafo, y nunca pegado a la foto de
+ * portada. Se corta solo entre bloques y sin partir un bloque de código (tweet, PDF...).
+ * Si la nota tiene menos de 3 párrafos, el video queda al final del texto.
+ */
+function partirCuerpoParaVideo(markdown: string, parrafosAntes = 3): [string, string] {
+  const bloques = markdown.split(/\n{2,}/);
+  let parrafos = 0;
+  let dentroDeCodigo = false;
+
+  for (let i = 0; i < bloques.length; i++) {
+    const bloque = bloques[i].trim();
+    const vallas = (bloque.match(/```/g) ?? []).length;
+    if (vallas % 2 === 1) dentroDeCodigo = !dentroDeCodigo;
+    if (dentroDeCodigo || vallas > 0) continue;
+    if (/^(#|!\[)/.test(bloque)) continue;
+
+    parrafos++;
+    if (parrafos === parrafosAntes) {
+      return [bloques.slice(0, i + 1).join("\n\n"), bloques.slice(i + 1).join("\n\n")];
+    }
+  }
+  return [markdown, ""];
+}
+
 export default async function NotaPage({ params }: Props) {
   const { slug } = await params;
   const articulo = await getArticuloPorSlug(slug);
@@ -73,14 +99,57 @@ export default async function NotaPage({ params }: Props) {
   const relacionadas = await getNotasRelacionadas(articulo.seccion, articulo.slug);
   let cuerpoMarkdown = normalizarMarkdown(articulo.cuerpo);
 
-  // Quitar la primera imagen del cuerpo: el hero ya la muestra arriba
+  // Quitar la primera imagen del cuerpo solo si es la MISMA foto que el hero muestra arriba
   if (/^https?:\/\//i.test(articulo.imagen)) {
-    cuerpoMarkdown = cuerpoMarkdown.replace(/!\[[^\]]*\]\([^)]+\)\n?/, '');
+    const primera = cuerpoMarkdown.match(/!\[[^\]]*\]\(([^)\s]+)[^)]*\)\n?/);
+    if (primera && claveFoto(primera[1]) === claveFoto(articulo.imagen)) {
+      cuerpoMarkdown = cuerpoMarkdown.replace(primera[0], '');
+    }
   }
 
   const youtubeId = articulo.video_url ? extraerYoutubeId(articulo.video_url) : null;
   const dailymotionId = !youtubeId && articulo.video_url ? extraerDailymotionId(articulo.video_url) : null;
+  const videoDirecto =
+    !youtubeId && !dailymotionId && articulo.video_url && /\.mp4(\?|#|$)/i.test(articulo.video_url)
+      ? articulo.video_url
+      : null;
+  const hayVideo = Boolean(youtubeId || dailymotionId || videoDirecto);
+  const [cuerpoAntes, cuerpoDespues] = hayVideo
+    ? partirCuerpoParaVideo(cuerpoMarkdown)
+    : [cuerpoMarkdown, ""];
   const faqs = articulo.faqs ?? [];
+
+  const bloqueVideo = (
+    <>
+      {youtubeId && (
+        <div className="nota-video">
+          <iframe
+            src={`https://www.youtube.com/embed/${youtubeId}`}
+            title={articulo.titulo}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      )}
+
+      {dailymotionId && (
+        <div className="nota-video">
+          <iframe
+            src={`https://www.dailymotion.com/embed/video/${dailymotionId}`}
+            title={articulo.titulo}
+            allow="autoplay; fullscreen"
+            allowFullScreen
+          />
+        </div>
+      )}
+
+      {videoDirecto && (
+        <div className="nota-video-nativo">
+          <video src={videoDirecto} controls playsInline preload="metadata" />
+        </div>
+      )}
+    </>
+  );
 
   return (
     <>
@@ -89,7 +158,7 @@ export default async function NotaPage({ params }: Props) {
       <main key={articulo.slug} className="page-fade">
         <article className="nota">
           <div className="wrap nota-wrap">
-            <div className="kicker">
+            <div className={`kicker ${claseSeccion(articulo.seccion)}`}>
               <Link href={SECCION_HREF[articulo.seccion] ?? "/"}>{articulo.kicker}</Link>
             </div>
             <h1>{articulo.titulo}</h1>
@@ -109,34 +178,20 @@ export default async function NotaPage({ params }: Props) {
               <span className="tag">{articulo.seccion}</span>
             </PhotoPlaceholder>
 
-            {youtubeId && (
-              <div className="nota-video">
-                <iframe
-                  src={`https://www.youtube.com/embed/${youtubeId}`}
-                  title={articulo.titulo}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            )}
-
-            {dailymotionId && (
-              <div className="nota-video">
-                <iframe
-                  src={`https://www.dailymotion.com/embed/video/${dailymotionId}`}
-                  title={articulo.titulo}
-                  allow="autoplay; fullscreen"
-                  allowFullScreen
-                />
-              </div>
-            )}
-
-
             <div className="nota-cuerpo">
               {cuerpoMarkdown ? (
-                <ReactMarkdown components={componentesMarkdown}>{cuerpoMarkdown}</ReactMarkdown>
+                <>
+                  <ReactMarkdown components={componentesMarkdown}>{cuerpoAntes}</ReactMarkdown>
+                  {bloqueVideo}
+                  {cuerpoDespues && (
+                    <ReactMarkdown components={componentesMarkdown}>{cuerpoDespues}</ReactMarkdown>
+                  )}
+                </>
               ) : (
-                <p className="nota-cuerpo-vacio">Todavía no hay cuerpo cargado para esta nota.</p>
+                <>
+                  {bloqueVideo}
+                  <p className="nota-cuerpo-vacio">Todavía no hay cuerpo cargado para esta nota.</p>
+                </>
               )}
             </div>
 
@@ -178,7 +233,7 @@ export default async function NotaPage({ params }: Props) {
                   {relacionadas.map((nota) => (
                     <Link key={nota.slug} href={`/nota/${nota.slug}`} className="card">
                       <PhotoPlaceholder variante={nota.imagen} className="cimg" />
-                      <div className="kicker">{nota.kicker}</div>
+                      <div className={`kicker ${claseSeccion(nota.seccion)}`}>{nota.kicker}</div>
                       <h3>{nota.titulo}</h3>
                       <p>{nota.bajada}</p>
                     </Link>

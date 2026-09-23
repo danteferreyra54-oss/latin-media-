@@ -30,7 +30,7 @@ export default async function AdminPage({ searchParams }: Props) {
   const visibles = (articulos || []).filter((a) => !a.oculta);
   const ocultas = (articulos || []).filter((a) => a.oculta);
 
-  const posiblesDuplicados = [...detectarPosiblesDuplicados(visibles)];
+  const posiblesDuplicados = Object.fromEntries(detectarPosiblesDuplicados(visibles));
 
   // Detectar notas de la última corrida: todas las del mismo minuto que la más reciente
   const notasUltimaCorridaIds = (() => {
@@ -100,7 +100,7 @@ export default async function AdminPage({ searchParams }: Props) {
                 {ocultas.length} nota{ocultas.length === 1 ? "" : "s"}
               </span>
             </div>
-            <AdminArticleList articulos={ocultas} adminKey={key} posiblesDuplicados={[]} ocultas />
+            <AdminArticleList articulos={ocultas} adminKey={key} posiblesDuplicados={{}} ocultas />
           </div>
         )}
       </div>

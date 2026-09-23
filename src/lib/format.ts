@@ -143,3 +143,32 @@ export function formatHorariosEscalonados(
 
   return resultado;
 }
+
+/** Identidad de una foto, sin dominio, medidas ni firmas: sirve para saber si dos URLs son la misma foto. */
+export function claveFoto(url: string): string {
+  let s = url || "";
+  try {
+    s = decodeURIComponent(s);
+  } catch {
+    // URL con % mal escrito: se usa tal cual
+  }
+  const arc = s.match(/[A-Z0-9]{26}/);
+  if (arc) return arc[0];
+  return s
+    .replace(/^https?:\/\/[^/]+/i, "")
+    .split("?")[0]
+    .split("#")[0]
+    .split("/")
+    .filter(
+      (seg) =>
+        seg &&
+        !/^\d+x\d+(?::\d+x\d+)?$/.test(seg) &&
+        !/^[0-9a-f]{32}$/i.test(seg) &&
+        !/^(smart|crop|fit|scale|resize|thumb|thumbs|large|medium|small|original|uploads)$/i.test(seg)
+    )
+    .join("/")
+    .toLowerCase()
+    .replace(/\.(jpe?g|png|webp|gif|avif|jfif)$/i, "")
+    .replace(/-\d{2,4}x\d{2,4}$/, "")
+    .replace(/[-_](thumb|small|medium|large|min|mini|xl|sm|md|lg|scaled)$/, "");
+}

@@ -136,23 +136,27 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Evita duplicados por fuente: si el pipeline reprocesa la misma noticia
-  // original, la IA puede generar un título distinto cada vez y el chequeo
-  // de arriba no lo detecta. `fuente` puede ser una URL http(s) o un token
-  // opaco (p. ej. Google News), así que en vez de exigir formato de URL
-  // solo se descartan los valores genéricos conocidos (no identifican una
-  // noticia puntual) y los strings muy cortos.
-  const FUENTES_GENERICAS = new Set(["Desconocido", "Latin Media Nacional", "Latin Media"]);
-  if (fuente.length >= 15 && !FUENTES_GENERICAS.has(fuente)) {
-    const { data: existentePorFuente } = await supabase
+  // Evita duplicados por nota de origen: si el pipeline reprocesa la misma
+  // noticia original, la IA puede generar un título distinto cada vez y el
+  // chequeo por slug de arriba no lo detecta.
+  //
+  // OJO: antes esto comparaba `fuente`, que hoy trae el NOMBRE del medio
+  // ("El Doce", "Aire de Santa Fe") y no el enlace. Con la regla de
+  // `length >= 15`, todo medio con nombre largo quedaba bloqueado para
+  // siempre después de su primera nota (Aire de Santa Fe e Infórmate Salta
+  // tenían una sola nota cada uno). Lo que identifica una noticia puntual es
+  // `fuente_original`, que es el enlace a la nota del medio.
+  const fuenteOriginal = (body.fuente_original as string | null | undefined)?.trim();
+  if (fuenteOriginal && /^https?:\/\//i.test(fuenteOriginal)) {
+    const { data: yaPublicadas } = await supabase
       .from("articulos")
       .select("slug")
-      .eq("fuente", fuente)
-      .maybeSingle();
+      .eq("fuente_original", fuenteOriginal)
+      .limit(1);
 
-    if (existentePorFuente) {
+    if (yaPublicadas?.length) {
       return NextResponse.json(
-        { error: "Ya existe una nota con esa misma fuente", slug: existentePorFuente.slug },
+        { error: "Ya existe una nota de esa misma noticia original", slug: yaPublicadas[0].slug },
         { status: 409 }
       );
     }

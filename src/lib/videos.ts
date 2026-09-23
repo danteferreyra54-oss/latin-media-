@@ -1,22 +1,36 @@
 import type { VideoYouTube } from "@/types/video";
+import { palabrasClave } from "@/lib/duplicados";
 
-const CANALES_CONFIABLES = [
-  { id: "UCj6PcyLvpnIRT_2W_mwa9Aw", nombre: "TN" },
-  { id: "UCvsU0EGXN7Su7MfNqcTGNHg", nombre: "Infobae" },
-  { id: "UCR9120YBAqMfntqgRTKmkjQ", nombre: "A24" },
-  { id: "UCba3hpU7EFBSk817y9qZkiA", nombre: "La Nación" },
+interface Canal {
+  id: string;
+  nombre: string;
+  duracionMin: number;
+  duracionMax: number;
+  excluirTitulo?: RegExp;
+}
+
+const CANALES_CONFIABLES: Canal[] = [
+  { id: "UCj6PcyLvpnIRT_2W_mwa9Aw", nombre: "TN", duracionMin: 60, duracionMax: 7 * 60 },
+  { id: "UCvsU0EGXN7Su7MfNqcTGNHg", nombre: "Infobae", duracionMin: 60, duracionMax: 7 * 60 },
+  { id: "UCR9120YBAqMfntqgRTKmkjQ", nombre: "A24", duracionMin: 60, duracionMax: 7 * 60 },
+  { id: "UCba3hpU7EFBSk817y9qZkiA", nombre: "La Nación", duracionMin: 60, duracionMax: 7 * 60 },
+  {
+    id: "UChxGASjdNEYHhVKpl667Huw",
+    nombre: "Telefe Noticias",
+    duracionMin: 0,
+    duracionMax: 3 * 60,
+    excluirTitulo: /gran hermano/i,
+  },
 ];
 
 const VIDEOS_POR_CANAL = 3;
-const DURACION_MINIMA_SEGUNDOS = 60; // PT1M
-const DURACION_MAXIMA_SEGUNDOS = 7 * 60; // PT7M
 
 /**
  * Cuánto tiempo cachea Next.js la respuesta de la YouTube Data API (segundos).
- * OJO: cada refresh completo cuesta ~400 unidades de cuota (4 llamadas a
+ * OJO: cada refresh completo cuesta ~500 unidades de cuota (5 llamadas a
  * search.list a 100 c/u, más 1 de videos.list). Con 10.000 unidades/día
- * gratis, eso da lugar a 25 refreshes/día como máximo. Con 3h acá quedan
- * 8 refreshes/día (~3.200 unidades), dejando margen.
+ * gratis, eso da lugar a 20 refreshes/día como máximo. Con 3h acá quedan
+ * 8 refreshes/día (~4.000 unidades), dejando margen.
  */
 export const REVALIDATE_VIDEOS = 10800; // 3 h
 
@@ -36,7 +50,7 @@ interface VideosListResponse {
 interface CandidatoVideo {
   videoId: string;
   titulo: string;
-  canal: string;
+  canal: Canal;
   publicado: string;
 }
 
@@ -48,11 +62,21 @@ function parseDuracionISO8601(duracion: string): number {
   return (Number(horas) || 0) * 3600 + (Number(minutos) || 0) * 60 + (Number(segundos) || 0);
 }
 
+/** La API de YouTube entrega los títulos con entidades HTML (&quot;, &amp;, &#39;...). */
+function decodificarEntidades(texto: string): string {
+  return texto
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
 function aVideoYouTube(candidato: CandidatoVideo): VideoYouTube {
   return {
     videoId: candidato.videoId,
-    titulo: candidato.titulo,
-    canal: candidato.canal,
+    titulo: decodificarEntidades(candidato.titulo),
+    canal: candidato.canal.nombre,
     thumbnail: `https://img.youtube.com/vi/${candidato.videoId}/mqdefault.jpg`,
     publicado: candidato.publicado,
   };
@@ -60,7 +84,7 @@ function aVideoYouTube(candidato: CandidatoVideo): VideoYouTube {
 
 async function buscarPorCanal(
   apiKey: string,
-  canal: { id: string; nombre: string }
+  canal: Canal
 ): Promise<CandidatoVideo[]> {
   const url =
     `${YOUTUBE_API}/search?part=snippet&channelId=${canal.id}&type=video` +
@@ -76,7 +100,7 @@ async function buscarPorCanal(
     const titulo = item.snippet?.title;
     const publicado = item.snippet?.publishedAt;
     if (videoId && titulo && publicado) {
-      candidatos.push({ videoId, titulo, canal: canal.nombre, publicado });
+      candidatos.push({ videoId, titulo, canal, publicado });
     }
   }
   return candidatos;
@@ -99,11 +123,30 @@ async function getDuraciones(apiKey: string, videoIds: string[]): Promise<Map<st
   return duraciones;
 }
 
+// Más agresivo que el detector de notas: preferimos perder un video a mostrar dos del mismo tema.
+const MIN_PALABRAS_COMPARTIDAS_VIDEO = 2;
+
+function palabrasDeVideo(titulo: string): Set<string> {
+  return palabrasClave(decodificarEntidades(titulo).replace(/#\S+/g, " "));
+}
+
+/** Entre videos del mismo tema se queda con el más nuevo (la lista ya viene ordenada por fecha). */
+function sinTemasRepetidos(candidatos: CandidatoVideo[]): CandidatoVideo[] {
+  const elegidos: { candidato: CandidatoVideo; palabras: Set<string> }[] = [];
+  for (const candidato of candidatos) {
+    const palabras = palabrasDeVideo(candidato.titulo);
+    const repetido = elegidos.some(
+      (e) => [...palabras].filter((p) => e.palabras.has(p)).length >= MIN_PALABRAS_COMPARTIDAS_VIDEO
+    );
+    if (!repetido) elegidos.push({ candidato, palabras });
+  }
+  return elegidos.map((e) => e.candidato);
+}
+
 /**
- * Últimos 3 videos de cada uno de los 4 canales confiables (search.list,
- * order=date), filtrados a duración entre 2 y 7 minutos (videos.list +
- * contentDetails), ordenados todos juntos por fecha de publicación
- * descendente.
+ * Últimos 3 videos de cada canal confiable (search.list, order=date),
+ * filtrados según las reglas de duración y título de cada canal, ordenados
+ * todos juntos por fecha de publicación descendente.
  */
 export async function getVideosDestacados(): Promise<VideoYouTube[]> {
   const apiKey = process.env.YOUTUBE_API_KEY;
@@ -128,18 +171,19 @@ export async function getVideosDestacados(): Promise<VideoYouTube[]> {
       candidatos.map((c) => c.videoId)
     );
 
-    const filtrados = candidatos.filter((candidato) => {
-      const duracion = duraciones.get(candidato.videoId);
-      return (
-        duracion !== undefined &&
-        duracion >= DURACION_MINIMA_SEGUNDOS &&
-        duracion <= DURACION_MAXIMA_SEGUNDOS
-      );
+    const filtrados = candidatos.filter(({ videoId, titulo, canal }) => {
+      const duracion = duraciones.get(videoId);
+      if (duracion === undefined || duracion < canal.duracionMin || duracion > canal.duracionMax) {
+        return false;
+      }
+      return !canal.excluirTitulo?.test(decodificarEntidades(titulo));
     });
 
-    return filtrados
-      .sort((a, b) => new Date(b.publicado).getTime() - new Date(a.publicado).getTime())
-      .map(aVideoYouTube);
+    const ordenados = filtrados.sort(
+      (a, b) => new Date(b.publicado).getTime() - new Date(a.publicado).getTime()
+    );
+
+    return sinTemasRepetidos(ordenados).map(aVideoYouTube);
   } catch (error) {
     console.error("Error trayendo videos de YouTube:", error);
     return [];

@@ -7,7 +7,7 @@ const STOPWORDS = new Set([
 ]);
 
 /** Título normalizado -> set de palabras significativas (sin tildes/stopwords/palabras cortas). */
-function palabrasClave(titulo: string): Set<string> {
+export function palabrasClave(titulo: string): Set<string> {
   const normalizado = titulo
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
@@ -30,7 +30,10 @@ interface ArticuloBase {
 
 const VENTANA_DIAS = 3;
 const UMBRAL_SOLAPAMIENTO = 0.4;
-const MIN_PALABRAS_COMPARTIDAS = 2;
+// Con 2 palabras el cartel marcaba cualquier cosa que compartiera un lugar y un
+// tema ("Mendoza" + "tormentas", "Córdoba" + "años"): 46 parejas en 5 días, casi
+// todas falsas alarmas. Con 3 baja a 24 y sigue agarrando los duplicados reales.
+const MIN_PALABRAS_COMPARTIDAS = 3;
 
 /**
  * Heurística de "posible duplicado": compara títulos publicados dentro de
@@ -40,8 +43,9 @@ const MIN_PALABRAS_COMPARTIDAS = 2;
  * exacto (eso ya lo hace POST /api/articles) — esto agarra notas distintas
  * que cubren el mismo hecho desde otra fuente.
  */
-export function detectarPosiblesDuplicados(articulos: ArticuloBase[]): Set<string> {
-  const duplicados = new Set<string>();
+export function detectarPosiblesDuplicados(articulos: ArticuloBase[]): Map<string, string> {
+  // id de la nota -> título de la otra nota con la que se parece (para mostrarlo al pasar el mouse)
+  const duplicados = new Map<string, string>();
   const items = articulos.map((a) => ({
     articulo: a,
     palabras: palabrasClave(a.titulo),
@@ -62,8 +66,8 @@ export function detectarPosiblesDuplicados(articulos: ArticuloBase[]): Set<strin
       const minSize = Math.min(a.palabras.size, b.palabras.size);
 
       if (compartidas >= MIN_PALABRAS_COMPARTIDAS && compartidas / minSize >= UMBRAL_SOLAPAMIENTO) {
-        duplicados.add(a.articulo.id);
-        duplicados.add(b.articulo.id);
+        if (!duplicados.has(a.articulo.id)) duplicados.set(a.articulo.id, b.articulo.titulo);
+        if (!duplicados.has(b.articulo.id)) duplicados.set(b.articulo.id, a.articulo.titulo);
       }
     }
   }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import PhotoPlaceholder from "./PhotoPlaceholder";
 import type { ArticuloHome } from "@/types/article";
 import { formatHorariosEscalonados } from "@/lib/format";
+import { claseSeccion } from "@/components/hp/seccionColor";
 
 interface Props {
   titulo: string;
@@ -25,7 +26,7 @@ export default function SeccionListado({ titulo, notas }: Props) {
               <Link key={nota.slug} href={`/nota/${nota.slug}`} className="card">
                 <PhotoPlaceholder variante={nota.imagen} className="cimg" />
                 <div className="card-header">
-                  <div className="kicker">{nota.kicker}</div>
+                  <div className={`kicker ${claseSeccion(nota.seccion)}`}>{nota.kicker}</div>
                   <div className="hora">{horas[idx]}</div>
                 </div>
                 <h3>{nota.titulo}</h3>
