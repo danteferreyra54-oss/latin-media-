@@ -177,6 +177,7 @@ export default async function NotaPage({ params }: Props) {
             <PhotoPlaceholder variante={articulo.imagen} className="nota-media">
               <span className="tag">{articulo.seccion}</span>
             </PhotoPlaceholder>
+            {articulo.epigrafe?.trim() && <p className="nota-epigrafe">{articulo.epigrafe}</p>}
 
             <div className="nota-cuerpo">
               {cuerpoMarkdown ? (

@@ -45,6 +45,7 @@ export interface DatosNota {
   autor: string;
   slug: string;
   imagen: string;
+  epigrafe?: string | null;
   faqs?: Array<{ pregunta: string; respuesta: string }>;
 }
 
@@ -297,6 +298,7 @@ export default function NotaForm({
   const [slug, setSlug] = useState(valoresIniciales?.slug ?? "");
   const [slugTocado, setSlugTocado] = useState(Boolean(valoresIniciales?.slug));
   const [imagenPortada, setImagenPortada] = useState(valoresIniciales?.imagen ?? "");
+  const [epigrafe, setEpigrafe] = useState(valoresIniciales?.epigrafe ?? "");
   const [subiendoPortada, setSubiendoPortada] = useState(false);
   const [faqs, setFaqs] = useState(valoresIniciales?.faqs ?? []);
   const [estado, setEstado] = useState<Estado>({ tipo: "idle" });
@@ -418,6 +420,7 @@ export default function NotaForm({
           autor: autor.trim(),
           slug: slug.trim(),
           imagen: imagenPortada,
+          epigrafe: epigrafe.trim() || null,
           faqs: faqs.length > 0 ? faqs : undefined,
         });
         if (resultado.ok) {
@@ -549,6 +552,17 @@ export default function NotaForm({
             />
           </label>
         )}
+      </div>
+
+      <div>
+        <label style={labelEstilo}>Epígrafe (texto debajo de la foto, opcional)</label>
+        <input
+          style={campoEstilo}
+          value={epigrafe}
+          onChange={(e) => setEpigrafe(e.target.value)}
+          placeholder="Ej: Foto: X @luispetri"
+          disabled={pending}
+        />
       </div>
 
       <div style={{ display: "flex", gap: "18px" }}>

@@ -28,6 +28,7 @@ export async function actualizarNota(slugOriginal: string,
     autor: datos.autor,
     slug: nuevoSlug,
     imagen: datos.imagen,
+    epigrafe: datos.epigrafe ?? null,
   };
 
   if (datos.faqs !== undefined) {

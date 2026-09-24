@@ -18,7 +18,7 @@ export default async function EditarNotaPage({ params }: Props) {
   const supabase = createAdminClient();
   const { data: articulo } = await supabase
     .from("articulos")
-    .select("titulo, bajada, cuerpo, seccion, autor, slug, imagen, faqs")
+    .select("titulo, bajada, cuerpo, seccion, autor, slug, imagen, epigrafe, faqs")
     .eq("slug", slug)
     .maybeSingle();
 

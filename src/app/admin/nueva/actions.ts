@@ -12,6 +12,7 @@ interface DatosNota {
   autor: string;
   slug: string;
   imagen: string;
+  epigrafe?: string | null;
   faqs?: Array<{ pregunta: string; respuesta: string }>;
 }
 
@@ -80,6 +81,7 @@ export async function crearNota(datos: DatosNota): Promise<ResultadoGuardado> {
         fuente: "Latin Media",
         slug: datos.slug,
         imagen: datos.imagen,
+        epigrafe: datos.epigrafe,
         faqs: datos.faqs,
       }),
     });

@@ -33,3 +33,6 @@ create policy "Articulos son visibles públicamente"
 -- Los INSERT/UPDATE/DELETE quedan sin policy: solo se podrán hacer
 -- con la service_role key (por ej. desde el futuro endpoint POST /api/articles
 -- que consume el pipeline de n8n), que bypassea RLS.
+
+-- Epígrafe: texto debajo de la foto de portada (ej: "Foto: X @luispetri"). Agregado 2026-09-24.
+alter table public.articulos add column if not exists epigrafe text;

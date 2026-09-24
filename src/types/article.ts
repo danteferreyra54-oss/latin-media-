@@ -27,6 +27,7 @@ export interface ArticuloAPI {
   fuente: string;
   faqs?: Faq[] | null;
   video_url?: string | null;
+  epigrafe?: string | null; // texto debajo de la foto de portada (ej: "Foto: X @luispetri")
 }
 
 /**

@@ -3,7 +3,7 @@ import type { ArticuloHome, ItemUltimasNoticias, Seccion } from "@/types/article
 import { formatHora, formatHorariosEscalonados } from "@/lib/format";
 
 const CAMPOS_ARTICULO =
-  "slug,titulo,bajada,cuerpo,seccion,kicker,autor,fecha,fuente,imagen,faqs,video_url";
+  "slug,titulo,bajada,cuerpo,seccion,kicker,autor,fecha,fuente,imagen,faqs,video_url,epigrafe";
 
 function esNotaLigera(nota: ArticuloHome): boolean {
   const titulo = nota.titulo.toLowerCase();

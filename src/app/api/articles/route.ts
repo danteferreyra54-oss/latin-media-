@@ -26,6 +26,7 @@ interface ArticuloBody {
   fuente_original?: unknown;
   kicker?: unknown;
   imagen?: unknown;
+  epigrafe?: unknown;
   faqs?: unknown;
   video_url?: unknown;
   slug?: unknown;
@@ -60,6 +61,9 @@ function validar(body: ArticuloBody): string | null {
  if (body.imagen !== undefined && typeof body.imagen !== "string") {
   return "imagen debe ser un string o null";
 }
+  if (body.epigrafe !== undefined && body.epigrafe !== null && typeof body.epigrafe !== "string") {
+    return "epigrafe debe ser un string o null";
+  }
   if (
     body.faqs !== undefined &&
     body.faqs !== null &&
@@ -180,6 +184,8 @@ export async function POST(request: NextRequest) {
       faqs: (body.faqs as Faq[] | undefined) ?? null,
       video_url: ((body.video_url as string | undefined) ?? "").trim() || null,
       provincia: (body.provincia as string | null | undefined) ?? null,
+      // solo si viene (n8n no lo manda): así el insert no depende de la columna para las notas automáticas
+      ...(typeof body.epigrafe === "string" && body.epigrafe.trim() ? { epigrafe: body.epigrafe.trim() } : {}),
     })
     .select()
     .single();
