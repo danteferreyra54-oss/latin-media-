@@ -37,6 +37,7 @@ export const metadata: Metadata = {
   description:
     "Noticias de todo el país. Ocho redacciones, una sola vara: contar lo que pasa, claro y sin vueltas.",
   verification: {
+    google: "MVeX-9uOfDFD9McsGA9P9TLiFh_plpfO-jdehn1w0sY",
     other: { "facebook-domain-verification": "h0ivoj7ezkfaz91leqa0ce8sjb4uxl" },
   },
 };
