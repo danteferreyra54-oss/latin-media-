@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown, { type Components } from "react-markdown";
@@ -19,6 +20,30 @@ export const revalidate = 60;
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+/** Título, descripción y URL propios de cada nota (sin esto Google veía "Latin Media" en todas). */
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const articulo = await getArticuloPorSlug(slug);
+  if (!articulo) return {};
+
+  const url = `/nota/${articulo.slug}`;
+  return {
+    title: articulo.titulo,
+    description: articulo.bajada,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      url,
+      title: articulo.titulo,
+      description: articulo.bajada,
+      publishedTime: articulo.fecha,
+      section: articulo.seccion,
+      authors: [articulo.autor],
+    },
+    twitter: { card: "summary_large_image", title: articulo.titulo, description: articulo.bajada },
+  };
 }
 
 /**
@@ -119,6 +144,31 @@ export default async function NotaPage({ params }: Props) {
     : [cuerpoMarkdown, ""];
   const faqs = articulo.faqs ?? [];
 
+  // Datos estructurados de noticia (schema.org NewsArticle): Google los usa para Noticias y Top Stories
+  const urlNota = `https://latinmediaok.com/nota/${articulo.slug}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: articulo.titulo,
+    description: articulo.bajada,
+    datePublished: articulo.fecha,
+    dateModified: articulo.fecha,
+    mainEntityOfPage: urlNota,
+    articleSection: articulo.seccion,
+    ...(/^https?:\/\//i.test(articulo.imagen) ? { image: [articulo.imagen] } : {}),
+    author: [
+      /^redacci/i.test(articulo.autor)
+        ? { "@type": "Organization", name: articulo.autor, url: "https://latinmediaok.com" }
+        : { "@type": "Person", name: articulo.autor },
+    ],
+    publisher: {
+      "@type": "Organization",
+      name: "Latin Media",
+      url: "https://latinmediaok.com",
+      logo: { "@type": "ImageObject", url: "https://latinmediaok.com/icon.svg" },
+    },
+  };
+
   const bloqueVideo = (
     <>
       {youtubeId && (
@@ -156,6 +206,10 @@ export default async function NotaPage({ params }: Props) {
       <SiteHeader />
 
       <main key={articulo.slug} className="page-fade">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+        />
         <article className="nota">
           <div className="wrap nota-wrap">
             <div className={`kicker ${claseSeccion(articulo.seccion)}`}>

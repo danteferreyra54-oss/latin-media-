@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
 import type { ArticuloHome, ItemUltimasNoticias, Seccion } from "@/types/article";
 import { formatHora, formatHorariosEscalonados } from "@/lib/format";
@@ -141,7 +142,8 @@ export async function getNotasPorProvincia(
   return (data ?? []) as ArticuloHome[];
 }
 
-export async function getArticuloPorSlug(slug: string): Promise<ArticuloHome | null> {
+// cache(): la nota se pide dos veces por visita (generateMetadata y la página); así va una sola consulta
+export const getArticuloPorSlug = cache(async (slug: string): Promise<ArticuloHome | null> => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("articulos")
@@ -152,7 +154,7 @@ export async function getArticuloPorSlug(slug: string): Promise<ArticuloHome | n
 
   if (error) console.error(`getArticuloPorSlug(${slug}):`, error.message);
   return data as ArticuloHome | null;
-}
+});
 
 export async function getNotasRelacionadas(
   seccion: Seccion,

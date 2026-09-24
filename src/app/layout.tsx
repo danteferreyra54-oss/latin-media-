@@ -31,7 +31,9 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Latin Media",
+  // dominio oficial: las URLs de canonical, og:url, etc. se arman sobre este
+  metadataBase: new URL("https://latinmediaok.com"),
+  title: { default: "Latin Media", template: "%s | Latin Media" },
   description:
     "Noticias de todo el país. Ocho redacciones, una sola vara: contar lo que pasa, claro y sin vueltas.",
   verification: {
