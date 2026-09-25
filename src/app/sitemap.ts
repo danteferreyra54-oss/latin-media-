@@ -3,8 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import { SECCION_HREF } from "@/lib/nav";
 
 // Mapa del sitio para Google: portada, secciones y todas las notas visibles.
-// Se regenera cada 10 minutos para que las notas nuevas entren solas.
-export const revalidate = 600;
+// Se regenera cada hora. Las notas recién publicadas las toma antes /news-sitemap.xml.
+export const revalidate = 3600;
 
 const BASE = "https://latinmediaok.com";
 
