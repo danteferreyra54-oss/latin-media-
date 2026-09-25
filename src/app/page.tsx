@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import HpPortadaSuperior from "@/components/hp/HpPortadaSuperior";
@@ -12,6 +13,14 @@ import { SECCION_HREF } from "@/lib/nav";
 import type { ArticuloHome, ItemUltimasNoticias } from "@/types/article";
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: { absolute: "Latin Media | Noticias de Argentina y de todas las provincias" },
+  description:
+    "Las noticias de todo el país en un solo lugar: política, economía, policiales y sociedad de Argentina y de cada provincia, contadas claro y sin vueltas.",
+  alternates: { canonical: "/" },
+  openGraph: { type: "website", url: "/", siteName: "Latin Media", locale: "es_AR" },
+};
 
 const NOTAS_POR_SECCION = 4;
 

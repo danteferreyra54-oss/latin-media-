@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+
+export const metadata: Metadata = {
+  title: "Quiénes somos",
+  description: "Latin Media es un medio digital argentino con redacciones en todo el país: contamos lo que pasa, claro y sin vueltas.",
+  alternates: { canonical: "/quienes-somos" },
+};
 
 export default function QuienesSomosPage() {
   return (

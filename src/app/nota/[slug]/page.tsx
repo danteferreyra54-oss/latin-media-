@@ -29,21 +29,40 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!articulo) return {};
 
   const url = `/nota/${articulo.slug}`;
+  const descripcion = recortar(articulo.bajada, 155);
+  // la foto de la nota; si no tiene, queda la imagen genérica del sitio (app/opengraph-image.tsx)
+  const imagenes = /^https?:\/\//i.test(articulo.imagen) ? [articulo.imagen] : undefined;
   return {
     title: articulo.titulo,
-    description: articulo.bajada,
+    description: descripcion,
     alternates: { canonical: url },
     openGraph: {
       type: "article",
       url,
+      siteName: "Latin Media",
+      locale: "es_AR",
       title: articulo.titulo,
-      description: articulo.bajada,
+      description: descripcion,
       publishedTime: articulo.fecha,
       section: articulo.seccion,
       authors: [articulo.autor],
+      ...(imagenes ? { images: imagenes } : {}),
     },
-    twitter: { card: "summary_large_image", title: articulo.titulo, description: articulo.bajada },
+    twitter: {
+      card: "summary_large_image",
+      title: articulo.titulo,
+      description: descripcion,
+      ...(imagenes ? { images: imagenes } : {}),
+    },
   };
+}
+
+/** Corta el texto en ~max letras sin partir palabras (Google muestra unas 155 en la descripción). */
+function recortar(texto: string, max: number) {
+  const limpio = texto.replace(/\s+/g, " ").trim();
+  if (limpio.length <= max) return limpio;
+  const corte = limpio.slice(0, max - 1);
+  return corte.slice(0, corte.lastIndexOf(" ")).replace(/[,;:.\s]+$/, "") + "…";
 }
 
 /**
@@ -155,7 +174,7 @@ export default async function NotaPage({ params }: Props) {
     dateModified: articulo.fecha,
     mainEntityOfPage: urlNota,
     articleSection: articulo.seccion,
-    ...(/^https?:\/\//i.test(articulo.imagen) ? { image: [articulo.imagen] } : {}),
+    image: [/^https?:\/\//i.test(articulo.imagen) ? articulo.imagen : "https://latinmediaok.com/opengraph-image"],
     author: [
       /^redacci/i.test(articulo.autor)
         ? { "@type": "Organization", name: articulo.autor, url: "https://latinmediaok.com" }
@@ -165,7 +184,8 @@ export default async function NotaPage({ params }: Props) {
       "@type": "Organization",
       name: "Latin Media",
       url: "https://latinmediaok.com",
-      logo: { "@type": "ImageObject", url: "https://latinmediaok.com/icon.svg" },
+      // Google no acepta logos SVG en datos estructurados: va el PNG
+      logo: { "@type": "ImageObject", url: "https://latinmediaok.com/apple-touch-icon.png", width: 180, height: 180 },
     },
   };
 
